@@ -6,7 +6,6 @@
                    projectFiles="true">
       <itemPath>FrameworkHeaders/Bin_Const.h</itemPath>
       <itemPath>FrameworkHeaders/ES_CheckEvents.h</itemPath>
-      <itemPath>FrameworkHeaders/ES_Configure.h</itemPath>
       <itemPath>FrameworkHeaders/ES_DeferRecall.h</itemPath>
       <itemPath>FrameworkHeaders/ES_Events.h</itemPath>
       <itemPath>FrameworkHeaders/ES_Framework.h</itemPath>
@@ -22,6 +21,7 @@
       <itemPath>FrameworkHeaders/terminal.h</itemPath>
       <itemPath>FrameworkHeaders/circular_buffer.h</itemPath>
       <itemPath>FrameworkHeaders/dbprintf.h</itemPath>
+      <itemPath>FrameworkHeaders/ES_Configure.h</itemPath>
     </logicalFolder>
     <logicalFolder name="FrameworkSource"
                    displayName="FrameworkSource"
@@ -82,7 +82,7 @@
         <targetDevice>PIC32MX170F256B</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>snap</platformTool>
         <languageToolchain>XC32</languageToolchain>
         <languageToolchainVersion>4.60</languageToolchainVersion>
         <platform>3</platform>
@@ -125,7 +125,8 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
-        <property key="extra-include-directories" value=""/>
+        <property key="extra-include-directories"
+                  value="FrameworkHeaders;ProjectHeaders"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
@@ -240,20 +241,10 @@
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
       </C32CPP>
-      <C32Global>
-        <property key="common-include-directories"
-                  value="FrameworkHeaders;ProjectHeaders"/>
-        <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
-        <property key="mdtcm" value=""/>
-        <property key="mitcm" value=""/>
-        <property key="mstacktcm" value="false"/>
-        <property key="omit-pack-options" value="1"/>
-        <property key="relaxed-math" value="true"/>
-        <property key="save-temps" value="false"/>
-        <property key="stack-smashing" value=""/>
-        <property key="wpo-lto" value="false"/>
-      </C32Global>
+      <item path="ProjectHeaders/TestHarnessService0.h" ex="true" overriding="false">
+      </item>
+      <item path="ProjectSource/TestHarnessService0.c" ex="true" overriding="false">
+      </item>
       <item path="ProjectSource/main.c" ex="false" overriding="false">
         <C32>
         </C32>
@@ -267,8 +258,6 @@
         </C32-LD>
         <C32CPP>
         </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <Simulator>
         <property key="codecoverage.enabled" value="Disable"/>
