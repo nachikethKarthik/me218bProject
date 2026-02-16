@@ -45,9 +45,25 @@ static uint8_t MyPriority;
 ****************************************************************************/
 bool InitFollowerService(uint8_t Priority)
 {
+  DB_printf("Start Follower\n");
   ES_Event_t ThisEvent;
-
+  
+  SPI1Follower_Init();
+  
+  //DB_printf("SS1R=%u SDI1R=%u\r\n", (unsigned)SS1R, (unsigned)SDI1R);
+  
+  TRISBbits.TRISB9 = 0;
   MyPriority = Priority;
+  
+//  DB_printf("SPI1CON=0x%08lx SPI1STAT=0x%08lx\n", SPI1CON, SPI1STAT);
+//  DB_printf("MSTEN=%d SSEN=%d MODE16=%d CKP=%d CKE=%d\n",
+//        SPI1CONbits.MSTEN, SPI1CONbits.SSEN, SPI1CONbits.MODE16,
+//        SPI1CONbits.CKP, SPI1CONbits.CKE);
+//  DB_printf("SS pin=%d\n", PORTBbits.RB4);
+  
+  
+  
+  
   // put us into the Initial PseudoState
   CurrentState = InitPState;
   // post the initial transition event
@@ -60,6 +76,8 @@ bool InitFollowerService(uint8_t Priority)
   {
     return false;
   }
+  
+ 
 }
 
 /****************************************************************************
@@ -124,15 +142,27 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
 
     case TestState:        // If current state is state one
     {
+      
       switch (ThisEvent.EventType)
       {
-        case ES_LOCK:  //If event is event one
-
+        case ES_COMMU:  //If event is event one
         {   // Execute action function for state one : event one
-            
+            SPI1Follower_LoadTx16(10);
+            LATBbits.LATB9 = 1;
+            DB_printf("Received\n");
+            ES_Timer_InitTimer(Follower_TIMER, 500);
         }
         break;
 
+        case ES_TIMEOUT:
+        {
+            if (ThisEvent.EventParam == Follower_TIMER){
+                LATBbits.LATB9 = 0;
+                //ES_Timer_InitTimer(Follower_TIMER, 500);
+            }
+                
+        }
+            
         // repeat cases as required for relevant events
         default:
           ;

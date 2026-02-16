@@ -39,6 +39,8 @@
 // include our own prototypes to insure consistency between header &
 // actual functionsdefinition
 #include "EventCheckers.h"
+#include "SPI1_CommHAL.h"
+#include "dbprintf.h"
 
 // This is the event checking function sample. It is not intended to be
 // included in the module. It is only here as a sample to guide you in writing
@@ -119,3 +121,17 @@ bool Check4Keystroke(void)
   return false;
 }
 
+bool CheckCommunication(void){
+    uint16_t w;
+    if (SPI1Follower_TryRead16(&w)){
+        //DB_printf("Received signal\n");
+        if(w == 0x0001){
+           ES_Event_t ThisEvent;
+            ThisEvent.EventType = ES_COMMU;
+            ES_PostAll(ThisEvent);
+            //ThisEvent.EventParam  = GetNewKey(); 
+            return true;
+        }
+    }
+    return false;
+}

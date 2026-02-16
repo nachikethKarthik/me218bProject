@@ -46,12 +46,32 @@ static uint8_t MyPriority;
 bool InitLeaderService(uint8_t Priority)
 {
   ES_Event_t ThisEvent;
-
+  DB_printf("Start!\n");
   MyPriority = Priority;
   // put us into the Initial PseudoState
   CurrentState = InitPState;
   // post the initial transition event
   ThisEvent.EventType = ES_INIT;
+  
+  //while(SPI1Leader_Init()){  
+  //}
+  SPI1Leader_Init();
+  
+  
+  
+//  DB_printf("Leader: ON=%u MSTEN=%u MSSEN=%u CKP=%u CKE=%u MODE16=%u\r\n",
+//          (unsigned)SPI1CONbits.ON,
+//          (unsigned)SPI1CONbits.MSTEN,
+//          (unsigned)SPI1CONbits.MSSEN,
+//          (unsigned)SPI1CONbits.CKP,
+//          (unsigned)SPI1CONbits.CKE,
+//          (unsigned)SPI1CONbits.MODE16);
+//
+//    DB_printf("Leader: SS(RB4)=%u\r\n", (unsigned)PORTBbits.RB4);
+//  
+  
+  //DB_printf("%d",IFSUC);
+  
   if (ES_PostToService(MyPriority, ThisEvent) == true)
   {
     return true;
@@ -122,10 +142,21 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     {
       switch (ThisEvent.EventType)
       {
-        case ES_LOCK:  //If event is event one
-
+        case ES_NEW_KEY:  //If event is event one
         {   // Execute action function for state one : event one
-
+            //DB_printf("%c\n",(char)ThisEvent.EventParam);
+            char key = (char)ThisEvent.EventParam;
+            //DB_printf("%c", key);
+            
+            if (key == 's'){
+                //DB_printf("s pressed\n");
+                //uint16_t resp = SPI1Leader_RequestResponse16(0x0001);
+                //SPI1Leader_SendCmd16(0x0001);
+                //DB_printf("%d",resp);
+                uint16_t R = SPI1Leader_RequestResponse16(0x0001);
+                DB_printf("%d\n",R);
+            }
+            
         }
         break;
 
