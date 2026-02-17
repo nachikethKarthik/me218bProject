@@ -183,70 +183,6 @@
 #define SERV_10_QUEUE_SIZE 3
 #endif
 
-/****************************************************************************/
-// These are the definitions for Service 11
-#if NUM_SERVICES > 11
-// the header file with the public function prototypes
-#define SERV_11_HEADER "TestHarnessService11.h"
-// the name of the Init function
-#define SERV_11_INIT InitTestHarnessService11
-// the name of the run function
-#define SERV_11_RUN RunTestHarnessService11
-// How big should this services Queue be?
-#define SERV_11_QUEUE_SIZE 3
-#endif
-
-/****************************************************************************/
-// These are the definitions for Service 12
-#if NUM_SERVICES > 12
-// the header file with the public function prototypes
-#define SERV_12_HEADER "TestHarnessService12.h"
-// the name of the Init function
-#define SERV_12_INIT InitTestHarnessService12
-// the name of the run function
-#define SERV_12_RUN RunTestHarnessService12
-// How big should this services Queue be?
-#define SERV_12_QUEUE_SIZE 3
-#endif
-
-/****************************************************************************/
-// These are the definitions for Service 13
-#if NUM_SERVICES > 13
-// the header file with the public function prototypes
-#define SERV_13_HEADER "TestHarnessService13.h"
-// the name of the Init function
-#define SERV_13_INIT InitTestHarnessService13
-// the name of the run function
-#define SERV_13_RUN RunTestHarnessService13
-// How big should this services Queue be?
-#define SERV_13_QUEUE_SIZE 3
-#endif
-
-/****************************************************************************/
-// These are the definitions for Service 14
-#if NUM_SERVICES > 14
-// the header file with the public function prototypes
-#define SERV_14_HEADER "TestHarnessService14.h"
-// the name of the Init function
-#define SERV_14_INIT InitTestHarnessService14
-// the name of the run function
-#define SERV_14_RUN RunTestHarnessService14
-// How big should this services Queue be?
-#define SERV_14_QUEUE_SIZE 3
-#endif
-
-/****************************************************************************/
-// These are the definitions for Service 15
-#if NUM_SERVICES > 15
-// the header file with the public function prototypes
-#define SERV_15_HEADER "TestHarnessService15.h"
-// the name of the Init function
-#define SERV_15_INIT InitTestHarnessService15
-// the name of the run function
-#define SERV_15_RUN RunTestHarnessService15
-// How big should this services Queue be?
-#define SERV_15_QUEUE_SIZE 3
-#endif
 
 /****************************************************************************/
 // Name/define the events of interest
@@ -260,8 +196,7 @@ typedef enum
   ES_SHORT_TIMEOUT,         /* signals that a short timer has expired */
   /* User-defined events start here */
   ES_NEW_KEY,               /* signals a new key received from terminal */
-  ES_LOCK,
-  ES_UNLOCK
+  ES_BEACON_DETECTED
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -296,7 +231,7 @@ typedef enum
 
 /****************************************************************************/
 // This is the list of event checking functions
-#define EVENT_CHECK_LIST Check4Keystroke
+#define EVENT_CHECK_LIST Check4Keystroke, Check4Beacon
 
 /****************************************************************************/
 // These are the definitions for the post functions to be executed when the
