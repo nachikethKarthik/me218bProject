@@ -48,29 +48,11 @@ bool InitLeaderService(uint8_t Priority)
   ES_Event_t ThisEvent;
   DB_printf("Start!\n");
   MyPriority = Priority;
-  // put us into the Initial PseudoState
   CurrentState = InitPState;
-  // post the initial transition event
   ThisEvent.EventType = ES_INIT;
   
-  //while(SPI1Leader_Init()){  
-  //}
   SPI1Leader_Init();
-  
-  
-  
-//  DB_printf("Leader: ON=%u MSTEN=%u MSSEN=%u CKP=%u CKE=%u MODE16=%u\r\n",
-//          (unsigned)SPI1CONbits.ON,
-//          (unsigned)SPI1CONbits.MSTEN,
-//          (unsigned)SPI1CONbits.MSSEN,
-//          (unsigned)SPI1CONbits.CKP,
-//          (unsigned)SPI1CONbits.CKE,
-//          (unsigned)SPI1CONbits.MODE16);
-//
-//    DB_printf("Leader: SS(RB4)=%u\r\n", (unsigned)PORTBbits.RB4);
-//  
-  
-  //DB_printf("%d",IFSUC);
+  MotorHAL_Init();
   
   if (ES_PostToService(MyPriority, ThisEvent) == true)
   {
@@ -142,21 +124,83 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     {
       switch (ThisEvent.EventType)
       {
-        case ES_NEW_KEY:  //If event is event one
-        {   // Execute action function for state one : event one
-            //DB_printf("%c\n",(char)ThisEvent.EventParam);
+        case ES_NEW_KEY:    
+        {  
             char key = (char)ThisEvent.EventParam;
-            //DB_printf("%c", key);
-            
-            if (key == 's'){
-                //DB_printf("s pressed\n");
-                //uint16_t resp = SPI1Leader_RequestResponse16(0x0001);
-                //SPI1Leader_SendCmd16(0x0001);
-                //DB_printf("%d",resp);
-                uint16_t R = SPI1Leader_RequestResponse16(0x0001);
-                DB_printf("%d\n",R);
+            switch (key)
+            {
+                case 's':
+                {
+                    //DB_printf("s pressed\n");
+                    //uint16_t resp = SPI1Leader_RequestResponse16(0x0001);
+                    //SPI1Leader_SendCmd16(0x0001);
+                    //DB_printf("%d",resp);
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0001);
+                    DB_printf("%d\n",R);
+                }
+                break;
+                
+                case 't':
+                {
+                    uint16_t m0 = MotorHAL_GetSpeedMeasRPM(0);
+                    uint16_t m1 = MotorHAL_GetSpeedMeasRPM(1);
+                    uint8_t duty0 = MotorHAL_GetDutyOut(0);
+                    uint8_t duty1 = MotorHAL_GetDutyOut(1);
+                    DB_printf("M0: %u RPM, Duty0: %u%% | M1: %u RPM, Duty1: %u%% \n", m0, duty0, m1, duty1);
+                }
+                break;
+                
+                case 'l':       
+                {
+                    // left motor forward
+                    DB_printf("l pressed, left motor forward\n");
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+                }
+                break;
+                
+                case 'r':       
+                {
+                    // right motor forward
+                    DB_printf("r pressed, right motor forward\n");
+                    MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                    MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+                }
+                break;
+                
+                case 'b':       
+                {
+                    // left motor backward
+                    DB_printf("b pressed, left motor backward\n");
+                    MotorHAL_SetSpeedCmdRPM(0, 80, 1l);
+                    MotorHAL_SetSpeedCmdRPM(1, 0, 1);
+                }
+                break;
+                
+                case 'n':       
+                {
+                    // right motor backward
+                    DB_printf("n pressed, right motor backward\n");
+                    MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                    MotorHAL_SetSpeedCmdRPM(0, 0, 1);
+                }
+                break;
+                
+                case 'p':
+                {
+                    DB_printf("p pressed, stop all motors\n");
+                    MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+                }
+                break;  
+                
+                case 'e':
+                {
+                    int32_t enc_count = MotorHAL_GetEncoderCount(0);
+                    DB_printf("enc_count = %d\n", enc_count);
+                }
+                break; 
             }
-            
         }
         break;
 
