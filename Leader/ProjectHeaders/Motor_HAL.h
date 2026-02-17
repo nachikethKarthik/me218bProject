@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 void MotorHAL_Init(void);
-void MotorHAL_SetSpeedCmdRPM(uint8_t id, uint16_t rpm);
+void MotorHAL_SetSpeedCmdRPM(uint8_t id, uint16_t rpm, _Bool reverse);
 uint16_t MotorHAL_GetSpeedMeasRPM(uint8_t id);
 int32_t MotorHAL_GetEncoderCount(uint8_t id);
 uint8_t MotorHAL_GetDutyOut(uint8_t id);
