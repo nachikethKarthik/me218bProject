@@ -281,40 +281,16 @@ uint8_t MotorHAL_GetDutyOut(uint8_t id)
     return m[id].duty;
 }
 
-//// CN ISR - Counts both rising and falling edges on channel A
-//void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
-//{
-//    volatile uint32_t dummy = PORTB;   // clear mismatch
-//    (void)dummy;
-//
-//    IFS1bits.CNBIF = 0;                // clear flag
-//
-//    // Motor 1 A
-//    uint8_t a1 = (uint8_t)(ENC1A_PORT ? 1U : 0U);
-//    if (a1 != m[0].a_prev) {           // counts rising + falling
-//        m[0].enc_count++;
-//        m[0].enc_delta++;
-//        m[0].a_prev = a1;
-//    }
-//
-//    // Motor 2 A
-//    uint8_t a2 = (uint8_t)(ENC2A_PORT ? 1U : 0U);
-//    if (a2 != m[1].a_prev) {           // counts rising + falling
-//        m[1].enc_count++;
-//        m[1].enc_delta++;
-//        m[1].a_prev = a2;
-//    }
-//}
-
 // CN ISR - Counts both rising and falling edges on channel A
 void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
 {
-    volatile uint32_t portSnapshot = PORTB;   // clear mismatch
+    volatile uint32_t dummy = PORTB;   // clear mismatch
+    (void)dummy;
 
     IFS1bits.CNBIF = 0;                // clear flag
 
     // Motor 1 A
-    uint8_t a1 = (uint8_t)(portSnapshot ? 1U : 0U);
+    uint8_t a1 = (uint8_t)(ENC1A_PORT ? 1U : 0U);
     if (a1 != m[0].a_prev) {           // counts rising + falling
         m[0].enc_count++;
         m[0].enc_delta++;
@@ -322,7 +298,7 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
     }
 
     // Motor 2 A
-    uint8_t a2 = (uint8_t)(portSnapshot ? 1U : 0U);
+    uint8_t a2 = (uint8_t)(ENC2A_PORT ? 1U : 0U);
     if (a2 != m[1].a_prev) {           // counts rising + falling
         m[1].enc_count++;
         m[1].enc_delta++;
@@ -338,25 +314,19 @@ void __ISR(_TIMER_4_VECTOR, IPL2SOFT) T4Handler(void)
     for (uint8_t id = 0; id < 2; id++) {
 
         int32_t dc;
-        //uint32_t s = enter_crit();
         __builtin_disable_interrupts();
         dc = m[id].enc_delta;
-        //DB_printf("DC = %d\n",dc);
         m[id].enc_delta = 0;
         __builtin_enable_interrupts();
-        //exit_crit(s);
 
         // rpm = (dc / edges_per_rev) / Ts * 60
         float rev_per_s = ((float)dc / (float)ENC_A_EDGES_PER_REV) / CTRL_TS_S;
-        //DB_printf("DC = %d\n",dc);
-        //DB_printf("rev/s = %d\n", rev_per_s);
         float rpm_f = rev_per_s * 60.0f;
         if (rpm_f < 0.0f) rpm_f = 0.0f;
         if (rpm_f > 65535.0f) rpm_f = 65535.0f;
 
         m[id].rpm_filt = alpha*m[id].rpm_filt + (1.0f-alpha)*rpm_f;
         m[id].meas_rpm = (uint16_t)(m[id].rpm_filt + 0.5f);
-        //m[id].meas_rpm = (uint16_t)(rpm_f + 0.5f);
         
         if (m[id].cmd_rpm == 0) {
             m[id].integ = 0.0f;
@@ -390,3 +360,5 @@ void __ISR(_TIMER_4_VECTOR, IPL2SOFT) T4Handler(void)
     
     
 }
+
+

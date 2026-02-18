@@ -1,4 +1,5 @@
 #include "../ProjectHeaders/FollowerService.h"
+#include "Servo_HAL.h"
 #include "SPI1_CommHAL.h"
 // Hardware
 #include <xc.h>

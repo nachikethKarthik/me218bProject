@@ -10,6 +10,8 @@ uint16_t MotorHAL_GetSpeedMeasRPM(uint8_t id);
 int32_t MotorHAL_GetEncoderCount(uint8_t id);
 uint8_t MotorHAL_GetDutyOut(uint8_t id);
 
+
+
 #ifdef __cplusplus
 }
 #endif
