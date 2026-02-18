@@ -210,7 +210,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             }
         }
         break;
-
+        case ES_BEACON_DETECTED:
+        {
+            uint16_t R = SPI1Leader_RequestResponse16(0x0001);
+            DB_printf("%d\n",R);
+        }
+        break;  
         // repeat cases as required for relevant events
         default:
           ;

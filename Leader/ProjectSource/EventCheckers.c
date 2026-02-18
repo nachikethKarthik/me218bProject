@@ -46,7 +46,7 @@
 /*---------------------------- Module Variables ---------------------------*/
 // Beacon detection parameters
 // Beacon frequency is 1427 Hz, so period is ~700 us
-#define BEACON_MIN_EDGES       5   // Minimum edges to detect beacon (1427 Hz * 0.01s * 2 edges/cycle = ~28)
+#define BEACON_MIN_EDGES       1   // Minimum edges to detect beacon (1427 Hz * 0.01s * 2 edges/cycle = ~28)
 // For beacon detection - track last state
 static uint8_t LastBeaconState = 0; // 0 = no beacon, 1 = beacon detected
 static uint8_t LastRA2State = 0; // For beacon detection
