@@ -233,6 +233,8 @@ typedef enum
 // This is the list of event checking functions
 #define EVENT_CHECK_LIST Check4Keystroke, Check4Beacon
 
+//EvCheckerTest
+
 /****************************************************************************/
 // These are the definitions for the post functions to be executed when the
 // corresponding timer expires. All 16 must be defined. If you are not using
