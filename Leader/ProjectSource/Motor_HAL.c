@@ -51,7 +51,7 @@ typedef struct {
     volatile uint8_t  a_prev;
 } MotorState;
 
-static MotorState m[2] = {0};
+static MotorState m[2] = {0, 1};
 
 // Enter the count crit, saving the status
 
