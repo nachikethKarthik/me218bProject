@@ -10,6 +10,7 @@
 #include "terminal.h"
 #include "dbprintf.h"
 #include "EventCheckers.h"
+#include "Beacondetector.h"
 /*----------------------------- Module Defines ----------------------------*/
 
 /*---------------------------- Module Functions ---------------------------*/
@@ -54,7 +55,7 @@ bool InitLeaderService(uint8_t Priority)
   
   SPI1Leader_Init();
   MotorHAL_Init();
-  InitEventCheckerHardware();
+  BeaconDetector_Init();
   
   if (ES_PostToService(MyPriority, ThisEvent) == true)
   {
@@ -131,11 +132,45 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             char key = (char)ThisEvent.EventParam;
             switch (key)
             {
+                case 'A':
+                {
+                    DB_printf("B pressed, beacon detector armed (any beacon)\n");
+                    BeaconDetector_Arm();
+                }
+                break;
+                
+                case 'L':
+                {
+                    DB_printf("L pressed, looking for beacon L only\n");
+                    BeaconDetector_ArmForTarget(BEACON_L);
+                }
+                break;
+                
+                case 'R':
+                {
+                    DB_printf("L pressed, looking for beacon R only\n");
+                    BeaconDetector_ArmForTarget(BEACON_R);
+                }
+                break;
+                
+                case 'G':
+                {
+                    DB_printf("L pressed, looking for beacon G only\n");
+                    BeaconDetector_ArmForTarget(BEACON_G);
+                }
+                break;
+                
                 case 'B':
                 {
-                    DB_printf("B pressed, beacon detector armed\n");
-                    ArmBeaconDetector();
-    
+                    DB_printf("L pressed, looking for beacon B only\n");
+                    BeaconDetector_ArmForTarget(BEACON_B);
+                }
+                break;
+                
+                case 'D':
+                {
+                    DB_printf("D pressed, beacon detector disarmed\n");
+                    BeaconDetector_Disarm();
                 }
                 break;
                 
