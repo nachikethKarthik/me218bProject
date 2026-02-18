@@ -1,5 +1,6 @@
 // Motor_HAL.c
 #include "Motor_HAL.h"
+#include "ES_CheckEvents.h"
 #include <xc.h>
 #include <sys/attribs.h>
 #include <stdint.h>
@@ -61,6 +62,10 @@ typedef struct {
     volatile int32_t  enc_delta;   // increasement during one period
     volatile uint8_t  a_prev;
     volatile uint8_t rpm_filt;
+    
+    volatile bool is_driving_fixed_dis;
+    volatile uint32_t start_count;
+    volatile uint32_t drive_count;
     //volatile uint8_t meas_rpm;
 } MotorState;
 
@@ -139,6 +144,8 @@ static void PWM_Init(void)
     
     m[0].rpm_filt = 0;
     m[1].rpm_filt = 0;
+    m[0].is_driving_fixed_dis = false;
+    m[1].is_driving_fixed_dis = false;
 }
 
 static inline void PWM_SetDutyPercent(uint8_t id, uint8_t duty_percent, bool reverse)
@@ -304,6 +311,20 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
         m[1].enc_delta++;
         m[1].a_prev = a2;
     }
+    
+    if (m[0].is_driving_fixed_dis == true){
+        if ((m[0].enc_count - m[0].start_count) >= m[0].drive_count){
+            MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+            m[0].is_driving_fixed_dis = false;
+        }
+    }
+    if (m[1].is_driving_fixed_dis == true){
+        if ((m[1].enc_count - m[1].start_count) >= m[1].drive_count){
+            MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+            m[1].is_driving_fixed_dis = false;
+        }
+    }
+    
 }
 
 // ISR for PI control
@@ -361,4 +382,24 @@ void __ISR(_TIMER_4_VECTOR, IPL2SOFT) T4Handler(void)
     
 }
 
+void MotorHAL_DriveEncoderCount(uint8_t id, uint16_t EncoderCounts){
+    if (id > 1) return;
+    __builtin_disable_interrupts();
+    m[id].start_count = m[id].enc_count;
+    __builtin_enable_interrupts();
+    
+    m[id].is_driving_fixed_dis = true; // Start driving fixed distance mode
+    m[id].drive_count = EncoderCounts;
+}
 
+
+int32_t MotorHAL_GetStartCount(uint8_t id)
+{
+    if (id > 1) return 0;
+    //uint32_t s = enter_crit();
+    __builtin_disable_interrupts();
+    int32_t s = m[id].start_count;
+    __builtin_enable_interrupts();
+    //exit_crit(s);
+    return s;
+}
