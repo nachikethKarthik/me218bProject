@@ -64,7 +64,7 @@ typedef struct {
     //volatile uint8_t meas_rpm;
 } MotorState;
 
-static MotorState m[2] = {0, 1};
+static MotorState m[2] = {0};
 
 // Enter the count crit, saving the status
 
