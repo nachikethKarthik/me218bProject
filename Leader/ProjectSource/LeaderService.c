@@ -9,6 +9,7 @@
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "EventCheckers.h"
 /*----------------------------- Module Defines ----------------------------*/
 
 /*---------------------------- Module Functions ---------------------------*/
@@ -46,13 +47,14 @@ static uint8_t MyPriority;
 bool InitLeaderService(uint8_t Priority)
 {
   ES_Event_t ThisEvent;
-  DB_printf("Start!\n");
+  DB_printf("Start Leader!\n");
   MyPriority = Priority;
   CurrentState = InitPState;
   ThisEvent.EventType = ES_INIT;
   
   SPI1Leader_Init();
   MotorHAL_Init();
+  InitEventCheckerHardware();
   
   if (ES_PostToService(MyPriority, ThisEvent) == true)
   {
@@ -129,12 +131,17 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             char key = (char)ThisEvent.EventParam;
             switch (key)
             {
+                case 'B':
+                {
+                    DB_printf("B pressed, beacon detector armed\n");
+                    ArmBeaconDetector();
+    
+                }
+                break;
+                
                 case 's':
                 {
                     //DB_printf("s pressed\n");
-                    //uint16_t resp = SPI1Leader_RequestResponse16(0x0001);
-                    //SPI1Leader_SendCmd16(0x0001);
-                    //DB_printf("%d",resp);
                     uint16_t R = SPI1Leader_RequestResponse16(0x0001);
                     DB_printf("%d\n",R);
                 }
