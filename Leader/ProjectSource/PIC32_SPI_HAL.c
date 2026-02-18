@@ -243,7 +243,30 @@ bool SPISetup_SetBitTime(SPI_Module_t WhichModule, uint32_t SPI_ClkPeriodIn_ns)
 ****************************************************************************/
 bool SPISetup_MapSSInput(SPI_Module_t WhichModule, SPI_PinMap_t WhichPin)
 {
-  // not needed for ME218a Labs
+  bool ReturnVal = true;
+
+  if ((false == isSPI_ModuleLegal(WhichModule)) ||
+      (false == isSS_OutputPinLegal(WhichModule, WhichPin)) ||
+      (WhichPin == SPI_NO_PIN))
+  {
+    return false;
+  }
+
+  selectModuleRegisters(WhichModule);
+  if (pSPICON->MSTEN != 0) {
+    return false;
+  }
+
+  *setTRISRegisters[WhichPin]  = mapPinMap2BitPosn[WhichPin];
+  *clrANSELRegisters[WhichPin] = mapPinMap2BitPosn[WhichPin];
+
+  if (WhichModule == SPI_SPI1) {
+    SS1R = mapPinMap2INTConst[WhichPin];
+  } else {
+    SS2R = mapPinMap2INTConst[WhichPin];
+  }
+
+  return ReturnVal;
 }
 
 /****************************************************************************
@@ -322,10 +345,14 @@ bool SPISetup_MapSDInput(SPI_Module_t WhichModule, SPI_PinMap_t WhichPin)
 {
   bool ReturnVal = true;
 
+  // 合法性检查
   if ((false == isSPI_ModuleLegal(WhichModule)) || (WhichPin == SPI_NO_PIN)) {
     return false;
   }
 
+  // SDI1 合法：SPI_RPA1, SPI_RPB1, SPI_RPB5, SPI_RPB8, SPI_RPB11
+  // SDI2 合法：SPI_RPA2, SPI_RPA4, SPI_RPB2, SPI_RPB6, SPI_RPB13
+  // 你这个 HAL 里没有单独的 isSDIPinLegal()，这里我们按模块做硬限制：
   if (WhichModule == SPI_SPI1) {
     if (!((WhichPin == SPI_RPA1) || (WhichPin == SPI_RPB1) || (WhichPin == SPI_RPB5) ||
           (WhichPin == SPI_RPB8) || (WhichPin == SPI_RPB11))) {
@@ -338,9 +365,12 @@ bool SPISetup_MapSDInput(SPI_Module_t WhichModule, SPI_PinMap_t WhichPin)
     }
   }
 
+  // 配引脚为数字输入
   *setTRISRegisters[WhichPin]   = mapPinMap2BitPosn[WhichPin];   // TRIS=1 input
   *clrANSELRegisters[WhichPin]  = mapPinMap2BitPosn[WhichPin];   // ANSEL=0 digital
 
+  // PPS 输入选择：SDI1R / SDI2R
+  // mapPinMap2INTConst[] 里存的是 RP 输入选择编码（对 INTxR/SDI1R/SDI2R 这类寄存器通常通用）
   if (WhichModule == SPI_SPI1) {
     SDI1R = mapPinMap2INTConst[WhichPin];
   } else {
@@ -349,7 +379,6 @@ bool SPISetup_MapSDInput(SPI_Module_t WhichModule, SPI_PinMap_t WhichPin)
 
   return ReturnVal;
 }
-
 
 /****************************************************************************
  Function
@@ -539,7 +568,7 @@ bool SPISetup_EnableSPI(SPI_Module_t WhichModule)
 ****************************************************************************/
 void SPIOperate_SPI1_Send8(uint8_t TheData)
 {
-    SPI1BUF = TheData; 
+  // not needed for ME218a Labs
 }
 
 /****************************************************************************
@@ -586,13 +615,7 @@ void SPIOperate_SPI1_Send32(uint32_t TheData)
 ****************************************************************************/
 void SPIOperate_SPI1_Send8Wait(uint8_t TheData)
 {
-  IFS0CLR = _IFS0_INT4IF_MASK; // not sure
-
-  SPI1BUF = TheData;
-
-  while (!SPIOperate_HasSS1_Risen()){
-  ;
-  }
+  // not needed for ME218a Labs
 }
 
 /****************************************************************************
@@ -835,3 +858,4 @@ void SPIOperate_SPI2_Send16Wait(uint16_t TheData)
         ;
     }
 }
+

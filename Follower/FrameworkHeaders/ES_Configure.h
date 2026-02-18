@@ -41,11 +41,11 @@
 // services are added in numeric sequence (1,2,3,...) with increasing
 // priorities
 // the header file with the public function prototypes
-#define SERV_0_HEADER "TestHarnessService0.h"
+#define SERV_0_HEADER "FollowerService.h"
 // the name of the Init function
-#define SERV_0_INIT InitTestHarnessService0
+#define SERV_0_INIT InitFollowerService
 // the name of the run function
-#define SERV_0_RUN RunTestHarnessService0
+#define SERV_0_RUN RunFollowerService
 // How big should this services Queue be?
 #define SERV_0_QUEUE_SIZE 5
 
@@ -261,7 +261,8 @@ typedef enum
   /* User-defined events start here */
   ES_NEW_KEY,               /* signals a new key received from terminal */
   ES_LOCK,
-  ES_UNLOCK
+  ES_UNLOCK,
+  ES_COMMU
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -296,7 +297,7 @@ typedef enum
 
 /****************************************************************************/
 // This is the list of event checking functions
-#define EVENT_CHECK_LIST Check4Keystroke
+#define EVENT_CHECK_LIST Check4Keystroke, CheckCommunication
 
 /****************************************************************************/
 // These are the definitions for the post functions to be executed when the
@@ -305,7 +306,7 @@ typedef enum
 // Unlike services, any combination of timers may be used and there is no
 // priority in servicing them
 #define TIMER_UNUSED ((pPostFunc)0)
-#define TIMER0_RESP_FUNC TIMER_UNUSED
+#define TIMER0_RESP_FUNC PostFollowerService
 #define TIMER1_RESP_FUNC TIMER_UNUSED
 #define TIMER2_RESP_FUNC TIMER_UNUSED
 #define TIMER3_RESP_FUNC TIMER_UNUSED
@@ -320,7 +321,7 @@ typedef enum
 #define TIMER12_RESP_FUNC TIMER_UNUSED
 #define TIMER13_RESP_FUNC TIMER_UNUSED
 #define TIMER14_RESP_FUNC TIMER_UNUSED
-#define TIMER15_RESP_FUNC PostTestHarnessService0
+#define TIMER15_RESP_FUNC TIMER_UNUSED
 
 /****************************************************************************/
 // Give the timer numbers symbolc names to make it easier to move them
@@ -329,7 +330,6 @@ typedef enum
 // the timer number matches where the timer event will be routed
 // These symbolic names should be changed to be relevant to your application
 
-#define SERVICE0_TIMER 15
-
+#define Follower_TIMER     0
 
 #endif /* ES_CONFIGURE_H */
