@@ -125,7 +125,7 @@ bool Check4Beacon(void) {
 //    DB_printf("%d\r", CurrentRA2);
     // Count edges (rising or falling)
     if (CurrentRA2 != LastRA2State) {
-        DB_printf("Incrementing\n");
+        //DB_printf("Incrementing\n");
         EdgeCount++;
         
     }
