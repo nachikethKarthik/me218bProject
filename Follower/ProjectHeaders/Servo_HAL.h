@@ -6,5 +6,6 @@
 
 void Servo_Init();
 void Servo_SetAngle(uint8_t id, uint8_t angle);
+void Servo_SetPalseWidth(uint8_t id, uint16_t pw);
 
 #endif
