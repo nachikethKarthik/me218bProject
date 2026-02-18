@@ -109,82 +109,82 @@ bool EvCheckerTest(void) {
  Author
    karthi24, 02042026
  ****************************************************************************/
-bool Check4Beacon(void) {
-
-    //    DB_printf("Looking\n");
-    // If not armed, don't do anything
-    if (!BeaconArmed) {
-        return false;
-    }
-
-    bool ReturnVal = false;
-    uint8_t CurrentRA2 = PORTAbits.RA2;
-
-    //  DB_printf("entered Check4Beacon\n");
-
-//    DB_printf("%d\r", CurrentRA2);
-    // Count edges (rising or falling)
-    if (CurrentRA2 != LastRA2State) {
-        //DB_printf("Incrementing\n");
-        EdgeCount++;
-        
-    }
-    LastRA2State = CurrentRA2;
-
-    uint8_t CurrentBeaconState = 0;
-
-    // Determine if beacon is present based on edge count
-    if (EdgeCount >= BEACON_MIN_EDGES) {
-        CurrentBeaconState = 1; // Beacon detected
-        //    DB_printf("current beacon state: %d\n", CurrentBeaconState);
-    } else {
-        CurrentBeaconState = 0; // No beacon
-    }
-
-    // Check for transition: no beacon -> beacon detected
-    if ((CurrentBeaconState != LastBeaconState) && (CurrentBeaconState == 1)) {
-        ES_Event_t ThisEvent;
-        ThisEvent.EventType = ES_BEACON_DETECTED;
-        ThisEvent.EventParam = (uint16_t) EdgeCount;
-        ES_PostAll(ThisEvent);
-        ReturnVal = true;
-        EdgeCount = 0;
-        BeaconArmed = false; // Disarm after detection - only one event
-        DB_printf("Beacon detected Event\n");
-    }
-
-    LastBeaconState = CurrentBeaconState; // actually this line is not necessary because the event checker is no longer armed
-
-    return ReturnVal;
-}
-
-/****************************************************************************
- Function
-   InitEventCheckerHardware
- Parameters
-   None
- Returns
-   bool: true if initialization successful
- Description
-   Initializes the hardware required for the event checkers:
-   - Digital input for beacon detector (RA2)
- Notes
-   
- Author
-   karthi24, 02032026
- ****************************************************************************/
-bool InitEventCheckerHardware(void) {
-    DB_printf("Hardware initialized\n");
-    // Configure RA2 as digital input for beacon detector
-    TRISAbits.TRISA2 = 1;
-    //  LATAbits.LATA2 = 0;
-    // Note: RA2 doesn't have an analog function on PIC32MX170F256B
-
-    return true;
-}
-
-void ArmBeaconDetector(void) {
-    LastBeaconState = 0;
-    EdgeCount = 0;
-    BeaconArmed = true;
-}
+//bool Check4Beacon(void) {
+//
+//    //    DB_printf("Looking\n");
+//    // If not armed, don't do anything
+//    if (!BeaconArmed) {
+//        return false;
+//    }
+//
+//    bool ReturnVal = false;
+//    uint8_t CurrentRA2 = PORTAbits.RA2;
+//
+//    //  DB_printf("entered Check4Beacon\n");
+//
+////    DB_printf("%d\r", CurrentRA2);
+//    // Count edges (rising or falling)
+//    if (CurrentRA2 != LastRA2State) {
+//        //DB_printf("Incrementing\n");
+//        EdgeCount++;
+//        
+//    }
+//    LastRA2State = CurrentRA2;
+//
+//    uint8_t CurrentBeaconState = 0;
+//
+//    // Determine if beacon is present based on edge count
+//    if (EdgeCount >= BEACON_MIN_EDGES) {
+//        CurrentBeaconState = 1; // Beacon detected
+//        //    DB_printf("current beacon state: %d\n", CurrentBeaconState);
+//    } else {
+//        CurrentBeaconState = 0; // No beacon
+//    }
+//
+//    // Check for transition: no beacon -> beacon detected
+//    if ((CurrentBeaconState != LastBeaconState) && (CurrentBeaconState == 1)) {
+//        ES_Event_t ThisEvent;
+//        ThisEvent.EventType = ES_BEACON_DETECTED;
+//        ThisEvent.EventParam = (uint16_t) EdgeCount;
+//        ES_PostAll(ThisEvent);
+//        ReturnVal = true;
+//        EdgeCount = 0;
+//        BeaconArmed = false; // Disarm after detection - only one event
+//        DB_printf("Beacon detected Event\n");
+//    }
+//
+//    LastBeaconState = CurrentBeaconState; // actually this line is not necessary because the event checker is no longer armed
+//
+//    return ReturnVal;
+//}
+//
+///****************************************************************************
+// Function
+//   InitEventCheckerHardware
+// Parameters
+//   None
+// Returns
+//   bool: true if initialization successful
+// Description
+//   Initializes the hardware required for the event checkers:
+//   - Digital input for beacon detector (RA2)
+// Notes
+//   
+// Author
+//   karthi24, 02032026
+// ****************************************************************************/
+//bool InitEventCheckerHardware(void) {
+//    DB_printf("Hardware initialized\n");
+//    // Configure RA2 as digital input for beacon detector
+//    TRISAbits.TRISA2 = 1;
+//    //  LATAbits.LATA2 = 0;
+//    // Note: RA2 doesn't have an analog function on PIC32MX170F256B
+//
+//    return true;
+//}
+//
+//void ArmBeaconDetector(void) {
+//    LastBeaconState = 0;
+//    EdgeCount = 0;
+//    BeaconArmed = true;
+//}
