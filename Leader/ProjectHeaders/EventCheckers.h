@@ -24,5 +24,10 @@
 
 bool Check4Keystroke(void);
 bool Check4Beacon(void);
+//bool EvCheckerTest(void);
+
+bool InitEventCheckerHardware(void);
+void ArmBeaconDetector(void);
+
 
 #endif /* EventCheckers_H */

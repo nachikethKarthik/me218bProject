@@ -17,7 +17,7 @@
  When           Who     What/Why
  -------------- ---     --------
  08/06/13 13:36 jec     initial version
-****************************************************************************/
+ ****************************************************************************/
 
 
 
@@ -39,8 +39,7 @@
 // this test harness for the framework references the serial routines that
 // are defined in ES_Port.c
 #include "ES_Port.h"
-// include our own prototypes to insure consistency between header &
-// actual functionsdefinition
+
 #include "EventCheckers.h"
 
 #include "dbprintf.h"
@@ -49,9 +48,9 @@
 // Beacon frequency is 1427 Hz, so period is ~700 us
 #define BEACON_MIN_EDGES       5   // Minimum edges to detect beacon (1427 Hz * 0.01s * 2 edges/cycle = ~28)
 // For beacon detection - track last state
-static uint8_t LastBeaconState = 0;  // 0 = no beacon, 1 = beacon detected
-static uint8_t LastRA2State = 0;     // For beacon detection
-static uint32_t EdgeCount = 0;       // Count of edges seen
+static uint8_t LastBeaconState = 0; // 0 = no beacon, 1 = beacon detected
+static uint8_t LastRA2State = 0; // For beacon detection
+static uint32_t EdgeCount = 0; // Count of edges seen
 static bool BeaconArmed = false;
 
 /****************************************************************************
@@ -73,19 +72,28 @@ static bool BeaconArmed = false;
    do not internally keep track of the last keystroke that we retrieved.
  Author
    J. Edward Carryer, 08/06/13, 13:48
-****************************************************************************/
-bool Check4Keystroke(void)
-{
-  if (IsNewKeyReady())   // new key waiting?
-  {
-    ES_Event_t ThisEvent;
-    ThisEvent.EventType   = ES_NEW_KEY;
-    ThisEvent.EventParam  = GetNewKey();
-    ES_PostAll(ThisEvent);
-    return true;
-  }
-  return false;
+ ****************************************************************************/
+bool Check4Keystroke(void) {
+
+    if (IsNewKeyReady()) // new key waiting?
+    {
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_NEW_KEY;
+        ThisEvent.EventParam = GetNewKey();
+        ES_PostAll(ThisEvent);
+        return true;
+    }
+    return false;
 }
+
+bool EvCheckerTest(void) {
+
+    //    DB_printf("test\n");
+    bool ReturnVal = false;
+
+    return ReturnVal;
+}
+
 /****************************************************************************
  Function
    Check4Beacon
@@ -100,53 +108,83 @@ bool Check4Keystroke(void)
  
  Author
    karthi24, 02042026
-****************************************************************************/
-bool Check4Beacon(void)
-{
-    
+ ****************************************************************************/
+bool Check4Beacon(void) {
+
+    //    DB_printf("Looking\n");
     // If not armed, don't do anything
-    if (!BeaconArmed)
-    {
+    if (!BeaconArmed) {
         return false;
     }
-    
-    
-  bool ReturnVal = false;
-  uint8_t CurrentRA2 = PORTAbits.RA2;
-  
-  // Count edges (rising or falling)
-  if (CurrentRA2 != LastRA2State)
-  {
-    EdgeCount++;
-  }
-  LastRA2State = CurrentRA2;
-  
-  uint8_t CurrentBeaconState;
-  
-  // Determine if beacon is present based on edge count
-  if (EdgeCount >= BEACON_MIN_EDGES)
-  {
-    CurrentBeaconState = 1;  // Beacon detected
-  }
-  else
-  {
-    CurrentBeaconState = 0;  // No beacon
-  }
-  
-  // Check for transition: no beacon -> beacon detected
-  if ((CurrentBeaconState != LastBeaconState) && (CurrentBeaconState == 1))
-  {
-    ES_Event_t ThisEvent;
-    ThisEvent.EventType = ES_BEACON_DETECTED;
-    ThisEvent.EventParam = (uint16_t)EdgeCount;
-    ES_PostAll(ThisEvent);
-    ReturnVal = true;
+
+    bool ReturnVal = false;
+    uint8_t CurrentRA2 = PORTAbits.RA2;
+
+    //  DB_printf("entered Check4Beacon\n");
+
+//    DB_printf("%d\r", CurrentRA2);
+    // Count edges (rising or falling)
+    if (CurrentRA2 != LastRA2State) {
+        DB_printf("Incrementing\n");
+        EdgeCount++;
+        
+    }
+    LastRA2State = CurrentRA2;
+
+    uint8_t CurrentBeaconState = 0;
+
+    // Determine if beacon is present based on edge count
+    if (EdgeCount >= BEACON_MIN_EDGES) {
+        CurrentBeaconState = 1; // Beacon detected
+        //    DB_printf("current beacon state: %d\n", CurrentBeaconState);
+    } else {
+        CurrentBeaconState = 0; // No beacon
+    }
+
+    // Check for transition: no beacon -> beacon detected
+    if ((CurrentBeaconState != LastBeaconState) && (CurrentBeaconState == 1)) {
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_BEACON_DETECTED;
+        ThisEvent.EventParam = (uint16_t) EdgeCount;
+        ES_PostAll(ThisEvent);
+        ReturnVal = true;
+        EdgeCount = 0;
+        BeaconArmed = false; // Disarm after detection - only one event
+        DB_printf("Beacon detected Event\n");
+    }
+
+    LastBeaconState = CurrentBeaconState; // actually this line is not necessary because the event checker is no longer armed
+
+    return ReturnVal;
+}
+
+/****************************************************************************
+ Function
+   InitEventCheckerHardware
+ Parameters
+   None
+ Returns
+   bool: true if initialization successful
+ Description
+   Initializes the hardware required for the event checkers:
+   - Digital input for beacon detector (RA2)
+ Notes
+   
+ Author
+   karthi24, 02032026
+ ****************************************************************************/
+bool InitEventCheckerHardware(void) {
+    DB_printf("Hardware initialized\n");
+    // Configure RA2 as digital input for beacon detector
+    TRISAbits.TRISA2 = 1;
+    //  LATAbits.LATA2 = 0;
+    // Note: RA2 doesn't have an analog function on PIC32MX170F256B
+
+    return true;
+}
+
+void ArmBeaconDetector(void) {
+    LastBeaconState = 0;
     EdgeCount = 0;
-    BeaconArmed = false;  // Disarm after detection - only one event
-    DB_printf("Beacon detected Event\n");
-  }
-  
-  LastBeaconState = CurrentBeaconState; // actually this line is not necessary because the event checker is no longer armed
-  
-  return ReturnVal;
+    BeaconArmed = true;
 }
