@@ -231,7 +231,7 @@ typedef enum
 
 /****************************************************************************/
 // This is the list of event checking functions
-#define EVENT_CHECK_LIST Check4Keystroke, Check4Beacon
+#define EVENT_CHECK_LIST Check4Keystroke//, Check4Beacon
 
 //EvCheckerTest
 

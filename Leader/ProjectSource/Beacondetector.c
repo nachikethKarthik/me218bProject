@@ -164,15 +164,12 @@ bool BeaconDetector_Init(void)
     T3CONbits.TCKPS = T3_PRESCALE_BITS;     // 1:8 prescaler
     TMR3 = 0;
     PR3 = 0xFFFF;                           // Free-running
-    
-    IFS0CLR = _IFS0_T3IF_MASK;
-    
+       
     // Timer3 overflow interrupt
     IPC3bits.T3IP = 3; // priority
     IPC3bits.T3IS = 0; //sub-priority
-    
+    IFS0CLR = _IFS0_T3IF_MASK;
     IEC0SET = _IEC0_T3IE_MASK;
-    
     
     T3CONbits.ON = 1;
     
@@ -311,7 +308,7 @@ BeaconID_t BeaconDetector_IdentifyBeacon(uint16_t frequency)
  Function
     IC1 ISR
 ****************************************************************************/
-void __ISR(_INPUT_CAPTURE_1_VECTOR, IPL5SOFT) IC1Handler(void)
+void __ISR(_INPUT_CAPTURE_1_VECTOR, IPL5AUTO) IC1Handler(void)
 {
     IFS0CLR = _IFS0_IC1IF_MASK;
     while (IC1CONbits.ICBNE) {
@@ -373,4 +370,22 @@ void __ISR(_INPUT_CAPTURE_1_VECTOR, IPL5SOFT) IC1Handler(void)
     }
     
 
+}
+
+/**************************
+ Function
+    Timer3 ISR - Timeout detection
+**************************/
+void __ISR(_TIMER_3_VECTOR, IPL3SOFT) T3Handler(void)
+{
+    IFS0bits.T3IF = 0;
+    
+    if (s_armed) {
+        s_overflowCount++;
+        
+        if (s_overflowCount >= OVERFLOW_TIMEOUT) {
+            // No edges for too long - reset detection state
+            ResetDetectionState();
+        }
+    }
 }
