@@ -162,6 +162,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     // left motor forward
                     DB_printf("l pressed, left motor forward\n");
                     MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_DriveEncoderCount(0, 600);
                     MotorHAL_SetSpeedCmdRPM(1, 0, 0);
                 }
                 break;
@@ -203,14 +204,20 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 
                 case 'e':
                 {
+                    int32_t start_count = MotorHAL_GetStartCount(0);
                     int32_t enc_count = MotorHAL_GetEncoderCount(0);
-                    DB_printf("enc_count = %d\n", enc_count);
+                    DB_printf("enc_count = %d, start count = %d\n", enc_count, start_count);
                 }
                 break; 
             }
         }
         break;
-
+        case ES_BEACON_DETECTED:
+        {
+            uint16_t R = SPI1Leader_RequestResponse16(0x0001);
+            DB_printf("%d\n",R);
+        }
+        break;  
         // repeat cases as required for relevant events
         default:
           ;

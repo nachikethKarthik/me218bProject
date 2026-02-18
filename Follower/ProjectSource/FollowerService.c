@@ -1,4 +1,5 @@
 #include "../ProjectHeaders/FollowerService.h"
+#include "Servo_HAL.h"
 #include "SPI1_CommHAL.h"
 // Hardware
 #include <xc.h>
@@ -151,6 +152,8 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             LATBbits.LATB9 = 1;
             DB_printf("Received\n");
             Servo_SetAngle(1, 60);
+            //Servo_SetPalseWidth(1, 6500);
+            
             ES_Timer_InitTimer(Follower_TIMER, 500);
         }
         break;
@@ -160,6 +163,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             if (ThisEvent.EventParam == Follower_TIMER){
                 LATBbits.LATB9 = 0;
                 Servo_SetAngle(1, 0);
+                //Servo_SetPalseWidth(1, 1500);
                 //ES_Timer_InitTimer(Follower_TIMER, 500);
             }
                 

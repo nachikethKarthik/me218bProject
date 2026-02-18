@@ -5,8 +5,8 @@
 
 #define TICS_PER_MS      2500U
 
-#define SERVO_MIN_TICKS  (TICS_PER_MS*5U/10U)     // 0.5ms
-#define SERVO_MAX_TICKS  (TICS_PER_MS*22U/10U)    // 2.2ms
+#define SERVO_MIN_TICKS  1500U   //
+#define SERVO_MAX_TICKS  6500U   //
 
 #define PR3_20MS         (uint16_t)(TICS_PER_MS*20U - 1U)  // 20ms
 
@@ -77,6 +77,19 @@ void Servo_SetAngle(uint8_t id, uint8_t angle)
     }
 }
 
+
+void Servo_SetPalseWidth(uint8_t id, uint16_t pw){
+    
+    if (pw < SERVO_MIN_TICKS) pw = SERVO_MIN_TICKS;
+    if (pw > SERVO_MAX_TICKS) pw = SERVO_MAX_TICKS;
+    if (id < 3) {
+        servo_pw_ticks[id] = pw;
+    }
+    
+}
+
+
+
 void __ISR(_TIMER_3_VECTOR, IPL2SOFT) T3Handler(void)
 {
     IFS0CLR = _IFS0_T3IF_MASK;
@@ -85,3 +98,4 @@ void __ISR(_TIMER_3_VECTOR, IPL2SOFT) T3Handler(void)
     OC2RS = servo_pw_ticks[1];
     OC4RS = servo_pw_ticks[2];
 }
+
