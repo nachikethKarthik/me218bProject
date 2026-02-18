@@ -281,16 +281,40 @@ uint8_t MotorHAL_GetDutyOut(uint8_t id)
     return m[id].duty;
 }
 
+//// CN ISR - Counts both rising and falling edges on channel A
+//void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
+//{
+//    volatile uint32_t dummy = PORTB;   // clear mismatch
+//    (void)dummy;
+//
+//    IFS1bits.CNBIF = 0;                // clear flag
+//
+//    // Motor 1 A
+//    uint8_t a1 = (uint8_t)(ENC1A_PORT ? 1U : 0U);
+//    if (a1 != m[0].a_prev) {           // counts rising + falling
+//        m[0].enc_count++;
+//        m[0].enc_delta++;
+//        m[0].a_prev = a1;
+//    }
+//
+//    // Motor 2 A
+//    uint8_t a2 = (uint8_t)(ENC2A_PORT ? 1U : 0U);
+//    if (a2 != m[1].a_prev) {           // counts rising + falling
+//        m[1].enc_count++;
+//        m[1].enc_delta++;
+//        m[1].a_prev = a2;
+//    }
+//}
+
 // CN ISR - Counts both rising and falling edges on channel A
 void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
 {
-    volatile uint32_t dummy = PORTB;   // clear mismatch
-    (void)dummy;
+    volatile uint32_t portSnapshot = PORTB;   // clear mismatch
 
     IFS1bits.CNBIF = 0;                // clear flag
 
     // Motor 1 A
-    uint8_t a1 = (uint8_t)(ENC1A_PORT ? 1U : 0U);
+    uint8_t a1 = (uint8_t)(portSnapshot ? 1U : 0U);
     if (a1 != m[0].a_prev) {           // counts rising + falling
         m[0].enc_count++;
         m[0].enc_delta++;
@@ -298,7 +322,7 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
     }
 
     // Motor 2 A
-    uint8_t a2 = (uint8_t)(ENC2A_PORT ? 1U : 0U);
+    uint8_t a2 = (uint8_t)(portSnapshot ? 1U : 0U);
     if (a2 != m[1].a_prev) {           // counts rising + falling
         m[1].enc_count++;
         m[1].enc_delta++;
