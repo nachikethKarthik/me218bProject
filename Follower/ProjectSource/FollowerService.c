@@ -1,4 +1,5 @@
 #include "../ProjectHeaders/FollowerService.h"
+#include "Flywheel_HAL.h"
 #include "Servo_HAL.h"
 #include "SPI1_CommHAL.h"
 // Hardware
@@ -51,6 +52,7 @@ bool InitFollowerService(uint8_t Priority)
   
   SPI1Follower_Init();
   Servo_Init();
+  Flywheel_Init();
   //DB_printf("SS1R=%u SDI1R=%u\r\n", (unsigned)SS1R, (unsigned)SDI1R);
   
   TRISBbits.TRISB9 = 0;
@@ -151,9 +153,9 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             SPI1Follower_LoadTx16(10);
             LATBbits.LATB9 = 1;
             DB_printf("Received\n");
-            Servo_SetAngle(1, 60);
+            //Servo_SetAngle(1, 60);
             //Servo_SetPalseWidth(1, 6500);
-            
+            Flywheel_SetDuty(100);
             ES_Timer_InitTimer(Follower_TIMER, 500);
         }
         break;
@@ -162,7 +164,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         {
             if (ThisEvent.EventParam == Follower_TIMER){
                 LATBbits.LATB9 = 0;
-                Servo_SetAngle(1, 0);
+                //Servo_SetAngle(1, 0);
                 //Servo_SetPalseWidth(1, 1500);
                 //ES_Timer_InitTimer(Follower_TIMER, 500);
             }
