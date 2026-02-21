@@ -2,6 +2,7 @@
 #include "Flywheel_HAL.h"
 #include "Servo_HAL.h"
 #include "SPI1_CommHAL.h"
+#include "LineFollowing_HAL.h"
 // Hardware
 #include <xc.h>
 #include "ES_Configure.h"
@@ -52,7 +53,8 @@ bool InitFollowerService(uint8_t Priority)
   
   SPI1Follower_Init();
   Servo_Init();
-  Flywheel_Init();
+  //Flywheel_Init();
+  Init_LineFollowing();
   //DB_printf("SS1R=%u SDI1R=%u\r\n", (unsigned)SS1R, (unsigned)SDI1R);
   
   TRISBbits.TRISB9 = 0;
@@ -155,7 +157,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             DB_printf("Received\n");
             //Servo_SetAngle(1, 60);
             //Servo_SetPalseWidth(1, 6500);
-            Flywheel_SetDuty(100);
+            //Flywheel_SetDuty(100);
             ES_Timer_InitTimer(Follower_TIMER, 500);
         }
         break;
@@ -170,7 +172,21 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             }
                 
         }
-            
+          case ES_NEW_KEY:
+            if (ThisEvent.EventParam == 'b'){
+                //ReadIRSensors();
+                //uint32_t bl = LineFollowing_GetBackLeft();
+                //uint32_t bc = LineFollowing_GetBackCenter(); 
+                //uint32_t br = LineFollowing_GetBackRight();
+                
+                //DB_printf("BackLeft = %d, BackCenter = %d, BackRight = %d\r\n", bl, bc, br);
+                
+                ReadIRSensors();
+                //printf("%d %d %d %d %d %d\r\n",LineFollowing_GetFrontLeft(),LineFollowing_GetFrontCenter(),LineFollowing_GetFrontRight(),LineFollowing_GetBackLeft(),LineFollowing_GetBackCenter(),LineFollowing_GetBackRight());
+                float turn = LineFollowing_ComputeFrontTurn();
+                PrintTurn(turn);
+
+            } 
         // repeat cases as required for relevant events
         default:
           ;
@@ -209,4 +225,20 @@ FollowerState_t QueryFollowerService(void)
 /***************************************************************************
  private functions
  ***************************************************************************/
+void PrintTurn(float turn)
+{
+    char sign = (turn < 0.0f) ? '-' : '+';
+    float a = (turn < 0.0f) ? -turn : turn;
 
+    uint16_t ip = (uint16_t)a;
+    uint16_t fp = (uint16_t)((a - (float)ip) * 1000.0f + 0.5f);
+    if (fp >= 1000) { fp -= 1000; ip += 1; }
+
+    if (fp < 10) {
+    DB_printf("turn is %c%u.00%u\r\n", sign, ip, fp);
+    } else if (fp < 100) {
+    DB_printf("turn is %c%u.0%u\r\n", sign, ip, fp);
+    } else {
+    DB_printf("turn is %c%u.%u\r\n", sign, ip, fp);
+    }
+}
