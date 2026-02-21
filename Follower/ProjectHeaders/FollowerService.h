@@ -27,6 +27,6 @@ bool InitFollowerService(uint8_t Priority);
 bool PostFollowerService(ES_Event_t ThisEvent);
 ES_Event_t RunFollowerService(ES_Event_t ThisEvent);
 FollowerState_t QueryFollowerService(void);
-
+void PrintTurn(float turn);
 #endif /* FSMTemplate_H */
 
