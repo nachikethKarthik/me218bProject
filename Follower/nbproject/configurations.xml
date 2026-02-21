@@ -48,6 +48,7 @@
       <itemPath>ProjectHeaders/SPI1_CommHAL.h</itemPath>
       <itemPath>ProjectHeaders/FollowerService.h</itemPath>
       <itemPath>ProjectHeaders/Servo_HAL.h</itemPath>
+      <itemPath>ProjectHeaders/Flywheel_HAL.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -63,6 +64,7 @@
       <itemPath>ProjectSource/SPI1_CommHAL.c</itemPath>
       <itemPath>ProjectSource/FollowerService.c</itemPath>
       <itemPath>ProjectSource/Servo_HAL.c</itemPath>
+      <itemPath>ProjectSource/Flywheel_HAL.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
