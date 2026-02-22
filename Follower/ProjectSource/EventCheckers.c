@@ -126,8 +126,15 @@ bool CheckCommunication(void){
     if (SPI1Follower_TryRead16(&w)){
         //DB_printf("Received signal\n");
         if(w == 0x0001){
-           ES_Event_t ThisEvent;
+            ES_Event_t ThisEvent;
             ThisEvent.EventType = ES_COMMU;
+            ES_PostAll(ThisEvent);
+            //ThisEvent.EventParam  = GetNewKey(); 
+            return true;
+        }
+        if (w == 0x0002){
+            ES_Event_t ThisEvent;
+            ThisEvent.EventType = ES_LINE;
             ES_PostAll(ThisEvent);
             //ThisEvent.EventParam  = GetNewKey(); 
             return true;

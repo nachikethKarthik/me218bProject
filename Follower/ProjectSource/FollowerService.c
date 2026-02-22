@@ -161,6 +161,16 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             ES_Timer_InitTimer(Follower_TIMER, 500);
         }
         break;
+        
+        case ES_LINE:
+        {
+            ReadIRSensors();
+            float turn = LineFollowing_ComputeFrontTurn();
+            float LineFollowing_result = turn + 100.0f;
+            SPI1Follower_LoadTx16((uint16_t)LineFollowing_result);
+            
+        }
+        break;
 
         case ES_TIMEOUT:
         {
@@ -170,23 +180,22 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //Servo_SetPalseWidth(1, 1500);
                 //ES_Timer_InitTimer(Follower_TIMER, 500);
             }
-                
+        break;
+        
         }
-          case ES_NEW_KEY:
+        case ES_NEW_KEY:
+        {
             if (ThisEvent.EventParam == 'b'){
-                //ReadIRSensors();
-                //uint32_t bl = LineFollowing_GetBackLeft();
-                //uint32_t bc = LineFollowing_GetBackCenter(); 
-                //uint32_t br = LineFollowing_GetBackRight();
-                
-                //DB_printf("BackLeft = %d, BackCenter = %d, BackRight = %d\r\n", bl, bc, br);
                 
                 ReadIRSensors();
                 //printf("%d %d %d %d %d %d\r\n",LineFollowing_GetFrontLeft(),LineFollowing_GetFrontCenter(),LineFollowing_GetFrontRight(),LineFollowing_GetBackLeft(),LineFollowing_GetBackCenter(),LineFollowing_GetBackRight());
                 float turn = LineFollowing_ComputeFrontTurn();
-                PrintTurn(turn);
-
+                float LineFollowing_result = turn + 100.0f;
+                DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
+                //PrintTurn(turn);
             } 
+        }
+        break;
         // repeat cases as required for relevant events
         default:
           ;

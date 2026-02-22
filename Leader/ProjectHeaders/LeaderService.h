@@ -12,7 +12,7 @@
 // State definitions for use with the query function
 typedef enum
 {
-  InitPState, TestState
+  InitPState, TestState, LineFollowingState, CheckPoint3State
 }LeaderState_t;
 
 // Public Function Prototypes
