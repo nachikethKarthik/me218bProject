@@ -96,7 +96,7 @@ bool SPI1Follower_TryRead16(uint16_t *out_word)
     if ((SPI1STAT & SPISTAT_RBF_MASK) == 0u) return false;
 
     *out_word = (uint16_t)SPI1BUF;
-    DB_printf("Get");
+    //DB_printf("Get");
     return true;
 }
 

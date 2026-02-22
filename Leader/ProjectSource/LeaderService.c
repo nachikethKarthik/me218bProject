@@ -118,147 +118,193 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
       if (ThisEvent.EventType == ES_INIT)    // only respond to ES_Init
       {
 
-        CurrentState = TestState;
+          
+//          CurrentState = LineFollowingState;
+//          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
+          
+          
+          //CheckPoint3
+        CurrentState = CheckPoint3State;
+        MotorHAL_SetSpeedCmdRPM(0, 30, 0);
+        MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+        
+        
       }
     }
     break;
 
     case TestState:        // If current state is state one
     {
-      switch (ThisEvent.EventType)
-      {
-        case ES_NEW_KEY:    
-        {  
-            char key = (char)ThisEvent.EventParam;
-            switch (key)
-            {
-                case 'A':
-                {
-                    DB_printf("B pressed, beacon detector armed (any beacon)\n");
-                    BeaconDetector_Arm();
-                }
-                break;
-                
-                case 'L':
-                {
-                    DB_printf("L pressed, looking for beacon L only\n");
-                    BeaconDetector_ArmForTarget(BEACON_L);
-                }
-                break;
-                
-                case 'R':
-                {
-                    DB_printf("L pressed, looking for beacon R only\n");
-                    BeaconDetector_ArmForTarget(BEACON_R);
-                }
-                break;
-                
-                case 'G':
-                {
-                    DB_printf("L pressed, looking for beacon G only\n");
-                    BeaconDetector_ArmForTarget(BEACON_G);
-                }
-                break;
-                
-                case 'B':
-                {
-                    DB_printf("L pressed, looking for beacon B only\n");
-                    BeaconDetector_ArmForTarget(BEACON_B);
-                }
-                break;
-                
-                case 'D':
-                {
-                    DB_printf("D pressed, beacon detector disarmed\n");
-                    BeaconDetector_Disarm();
-                }
-                break;
-                
-                case 's':
-                {
-                    //DB_printf("s pressed\n");
-                    uint16_t R = SPI1Leader_RequestResponse16(0x0001);
-                    DB_printf("%d\n",R);
-                }
-                break;
-                
-                case 't':
-                {
-                    uint16_t m0 = MotorHAL_GetSpeedMeasRPM(0);
-                    uint16_t m1 = MotorHAL_GetSpeedMeasRPM(1);
-                    uint8_t duty0 = MotorHAL_GetDutyOut(0);
-                    uint8_t duty1 = MotorHAL_GetDutyOut(1);
-                    DB_printf("M0: %u RPM, Duty0: %u%% | M1: %u RPM, Duty1: %u%% \n", m0, duty0, m1, duty1);
-                }
-                break;
-                
-                case 'l':       
-                {
-                    // left motor forward
-                    DB_printf("l pressed, left motor forward\n");
-                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
-                    MotorHAL_DriveEncoderCount(0, 600);
-                    MotorHAL_SetSpeedCmdRPM(1, 0, 0);
-                }
-                break;
-                
-                case 'r':       
-                {
-                    // right motor forward
-                    DB_printf("r pressed, right motor forward\n");
-                    MotorHAL_SetSpeedCmdRPM(1, 30, 0);
-                    MotorHAL_SetSpeedCmdRPM(0, 0, 0);
-                }
-                break;
-                
-                case 'b':       
-                {
-                    // left motor backward
-                    DB_printf("b pressed, left motor backward\n");
-                    MotorHAL_SetSpeedCmdRPM(0, 80, 1l);
-                    MotorHAL_SetSpeedCmdRPM(1, 0, 1);
-                }
-                break;
-                
-                case 'n':       
-                {
-                    // right motor backward
-                    DB_printf("n pressed, right motor backward\n");
-                    MotorHAL_SetSpeedCmdRPM(1, 30, 1);
-                    MotorHAL_SetSpeedCmdRPM(0, 0, 1);
-                }
-                break;
-                
-                case 'p':
-                {
-                    DB_printf("p pressed, stop all motors\n");
-                    MotorHAL_SetSpeedCmdRPM(0, 0, 0);
-                    MotorHAL_SetSpeedCmdRPM(1, 0, 0);
-                }
-                break;  
-                
-                case 'e':
-                {
-                    int32_t start_count = MotorHAL_GetStartCount(0);
-                    int32_t enc_count = MotorHAL_GetEncoderCount(0);
-                    DB_printf("enc_count = %d, start count = %d\n", enc_count, start_count);
-                }
-                break; 
-            }
-        }
-        break;
-        case ES_BEACON_DETECTED:
+        switch (ThisEvent.EventType)
         {
-            uint16_t R = SPI1Leader_RequestResponse16(0x0001);
-            DB_printf("%d\n",ThisEvent.EventParam);
-        }
-        break;  
-        // repeat cases as required for relevant events
-        default:
-          ;
-      }  // end switch on CurrentEvent
+            case ES_NEW_KEY:    
+            {  
+                char key = (char)ThisEvent.EventParam;
+                switch (key)
+                {
+                    case 'A':
+                    {
+                        DB_printf("B pressed, beacon detector armed (any beacon)\n");
+                        BeaconDetector_Arm();
+                    }
+                    break;
+
+                    case 'L':
+                    {
+                        DB_printf("L pressed, looking for beacon L only\n");
+                        BeaconDetector_ArmForTarget(BEACON_L);
+                    }
+                    break;
+
+                    case 'R':
+                    {
+                        DB_printf("L pressed, looking for beacon R only\n");
+                        BeaconDetector_ArmForTarget(BEACON_R);
+                    }
+                    break;
+
+                    case 'G':
+                    {
+                        DB_printf("L pressed, looking for beacon G only\n");
+                        BeaconDetector_ArmForTarget(BEACON_G);
+                    }
+                    break;
+
+                    case 'B':
+                    {
+                        DB_printf("L pressed, looking for beacon B only\n");
+                        BeaconDetector_ArmForTarget(BEACON_B);
+                    }
+                    break;
+
+                    case 'D':
+                    {
+                        DB_printf("D pressed, beacon detector disarmed\n");
+                        BeaconDetector_Disarm();
+                    }
+                    break;
+
+                    case 's':
+                    {
+                        //DB_printf("s pressed\n");
+                        uint16_t R = SPI1Leader_RequestResponse16(0x0001);
+                        DB_printf("%d\n",R);
+                    }
+                    break;
+
+                    case 't':
+                    {
+                        uint16_t m0 = MotorHAL_GetSpeedMeasRPM(0);
+                        uint16_t m1 = MotorHAL_GetSpeedMeasRPM(1);
+                        uint8_t duty0 = MotorHAL_GetDutyOut(0);
+                        uint8_t duty1 = MotorHAL_GetDutyOut(1);
+                        DB_printf("M0: %u RPM, Duty0: %u%% | M1: %u RPM, Duty1: %u%% \n", m0, duty0, m1, duty1);
+                    }
+                    break;
+
+                    case 'l':       
+                    {
+                        // left motor forward
+                        DB_printf("l pressed, left motor forward\n");
+                        MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                        MotorHAL_DriveEncoderCount(0, 600);
+                        MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+                    }
+                    break;
+
+                    case 'r':       
+                    {
+                        // right motor forward
+                        DB_printf("r pressed, right motor forward\n");
+                        MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+                    }
+                    break;
+
+                    case 'b':       
+                    {
+                        // left motor backward
+                        DB_printf("b pressed, left motor backward\n");
+                        MotorHAL_SetSpeedCmdRPM(0, 80, 1l);
+                        MotorHAL_SetSpeedCmdRPM(1, 0, 1);
+                    }
+                    break;
+
+                    case 'n':       
+                    {
+                        // right motor backward
+                        DB_printf("n pressed, right motor backward\n");
+                        MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                        MotorHAL_SetSpeedCmdRPM(0, 0, 1);
+                    }
+                    break;
+
+                    case 'p':
+                    {
+                        DB_printf("p pressed, stop all motors\n");
+                        MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+                        MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+                    }
+                    break;  
+
+                    case 'e':
+                    {
+                        int32_t start_count = MotorHAL_GetStartCount(0);
+                        int32_t enc_count = MotorHAL_GetEncoderCount(0);
+                        DB_printf("enc_count = %d, start count = %d\n", enc_count, start_count);
+                    }
+                    break; 
+                }
+            }
+            break;
+            case ES_BEACON_DETECTED:
+            {
+                uint16_t R = SPI1Leader_RequestResponse16(0x0001);
+                DB_printf("%d\n",ThisEvent.EventParam);
+            }
+            break;  
+            // repeat cases as required for relevant events
+            default:
+            ;
+        }  // end switch on CurrentEvent
     }
     break;
+    
+    
+    case LineFollowingState:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0002);
+                    DB_printf("Turn is %d\r\n", R);
+                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
+                }
+
+
+            }
+        }
+    }   
+    break;
+    
+    case CheckPoint3State:
+    { 
+        switch (ThisEvent.EventType){
+            case ES_BEACON_DETECTED:
+            {
+                MotorHAL_SetSpeedCmdRPM(0, 30, 0);
+                MotorHAL_DriveEncoderCount(0, 600);
+                MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                MotorHAL_DriveEncoderCount(1, 600);
+            }
+        }
+    } 
+    break;
+    
+    
+    
     // repeat state pattern as required for other states
     default:
       ;
