@@ -124,9 +124,11 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
           
           
           //CheckPoint3
-        CurrentState = CheckPoint3State;
+        
         MotorHAL_SetSpeedCmdRPM(0, 30, 0);
         MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+        CurrentState = CheckPoint3State;
+        BeaconDetector_ArmForTarget(BEACON_R);
         
         
       }
@@ -294,6 +296,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         switch (ThisEvent.EventType){
             case ES_BEACON_DETECTED:
             {
+                DB_printf("Detected R !\n");
                 MotorHAL_SetSpeedCmdRPM(0, 30, 0);
                 MotorHAL_DriveEncoderCount(0, 600);
                 MotorHAL_SetSpeedCmdRPM(1, 30, 0);
