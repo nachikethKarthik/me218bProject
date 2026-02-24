@@ -263,7 +263,9 @@ typedef enum
   ES_LOCK,
   ES_UNLOCK,
   ES_COMMU,
-  ES_LINE
+  ES_LINE,
+  ES_LEFT,
+  ES_RIGHT
 }ES_EventType_t;
 
 /****************************************************************************/

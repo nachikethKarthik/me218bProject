@@ -59,7 +59,7 @@ bool InitFollowerService(uint8_t Priority)
   
   TRISBbits.TRISB9 = 0;
   MyPriority = Priority;
-  
+  Servo_SetAngle(1, 90);
 //  DB_printf("SPI1CON=0x%08lx SPI1STAT=0x%08lx\n", SPI1CON, SPI1STAT);
 //  DB_printf("MSTEN=%d SSEN=%d MODE16=%d CKP=%d CKE=%d\n",
 //        SPI1CONbits.MSTEN, SPI1CONbits.SSEN, SPI1CONbits.MODE16,
@@ -194,7 +194,25 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
                 //PrintTurn(turn);
             } 
+            if (ThisEvent.EventParam == 'l'){
+                Servo_SetAngle(1, 0);
+            }
+            if (ThisEvent.EventParam == 'r'){
+                Servo_SetAngle(1, 180);
+            }
         }
+        break;
+        
+        case ES_LEFT:
+        {
+            Servo_SetAngle(1, 0);
+        }
+        break;
+        
+        case ES_RIGHT:
+        {
+            Servo_SetAngle(1, 180);
+        }  
         break;
         // repeat cases as required for relevant events
         default:

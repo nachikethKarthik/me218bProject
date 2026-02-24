@@ -25,6 +25,8 @@ static LeaderState_t CurrentState;
 
 // with the introduction of Gen2, we need a module level Priority var as well
 static uint8_t MyPriority;
+static bool BeaconGDetected = false;
+static uint16_t base_speed;
 
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
@@ -124,11 +126,10 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
           
           
           //CheckPoint3
-        
-        MotorHAL_SetSpeedCmdRPM(0, 30, 0);
-        MotorHAL_SetSpeedCmdRPM(1, 30, 1);
-        CurrentState = CheckPoint3State;
-        BeaconDetector_ArmForTarget(BEACON_R);
+//        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+//        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+//        CurrentState = CheckPoint3State_1;
+//        BeaconDetector_ArmForTarget(BEACON_R);
         
         
       }
@@ -282,6 +283,9 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
                     uint16_t R = SPI1Leader_RequestResponse16(0x0002);
                     DB_printf("Turn is %d\r\n", R);
+                    MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                    
                     ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
                 }
 
@@ -291,22 +295,63 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     }   
     break;
     
-    case CheckPoint3State:
+    case CheckPoint3State_1:
     { 
         switch (ThisEvent.EventType){
             case ES_BEACON_DETECTED:
             {
-                DB_printf("Detected R !\n");
-                MotorHAL_SetSpeedCmdRPM(0, 30, 0);
-                MotorHAL_DriveEncoderCount(0, 600);
-                MotorHAL_SetSpeedCmdRPM(1, 30, 0);
-                MotorHAL_DriveEncoderCount(1, 600);
+                if(ThisEvent.EventParam > 818 && ThisEvent.EventParam < 1000){
+                    ES_Timer_InitTimer(SIDEDECITION_TIMER, 6000);
+                    BeaconDetector_ArmForTarget(BEACON_L);
+                    DB_printf("Beacon R detected!\n");
+                    BeaconGDetected = true;
+                }
+                if(BeaconGDetected == true && ThisEvent.EventParam >= 1800 && ThisEvent.EventParam <= 2200){
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0004);
+                    CurrentState = CheckPoint3State_2;
+                    DB_printf("Then Beacon G detected!\n");
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+                    BeaconDetector_ArmForTarget(BEACON_R);
+                }
             }
+            break;
+            
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == SIDEDECITION_TIMER){
+                    DB_printf("Timer expired!\n");
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0003);
+                    CurrentState = CheckPoint3State_2;
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+                    BeaconDetector_ArmForTarget(BEACON_R);
+                }
+            }
+         
         }
+    
+        
     } 
     break;
     
-    
+    case CheckPoint3State_2:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_BEACON_DETECTED:
+            {
+                if(ThisEvent.EventParam > 818 && ThisEvent.EventParam < 1000){
+                    MotorHAL_DriveEncoderCount(0, 600);
+                    MotorHAL_DriveEncoderCount(1, 600);
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 0); 
+                }
+            }
+            break;
+        }
+    }
+    break;
     
     // repeat state pattern as required for other states
     default:
