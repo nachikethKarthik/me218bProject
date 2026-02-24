@@ -121,8 +121,11 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
       {
 
           
-//          CurrentState = LineFollowingState;
-//          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
+          CurrentState = LineFollowingState;
+          MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+          MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+          base_speed = 20;
+          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
           
           
           //CheckPoint3
@@ -283,9 +286,9 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
                     uint16_t R = SPI1Leader_RequestResponse16(0x0002);
                     DB_printf("Turn is %d\r\n", R);
-                    MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
-                    MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
-                    
+                    MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 0);
+
                     ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
                 }
 
