@@ -8,7 +8,7 @@
 
 #define CHANNEL_SET  ((1u<<0)|(1u<<1)|(1u<<4)|(1u<<5)|(1u<<11)|(1u<<12))
 
-#define KP        10.0f
+#define KP        13.0f
 #define KD        1.0f
 
 static uint32_t ADCResults[8];
@@ -20,6 +20,9 @@ static uint32_t FrontRight  = 0;
 static uint32_t BackLeft    = 0;
 static uint32_t BackCenter  = 0;
 static uint32_t BackRight   = 0;
+
+static uint32_t TH = 900;
+
 
 // PD state (use float)
 static float last_err_front = 0.0f;
@@ -106,4 +109,52 @@ float LineFollowing_ComputeBackTurn(void)
     last_err_back = e;
 
     return (KP * e) + (KD * de);
+}
+
+bool is_branch_F(void)
+{
+    bool FL = (FrontLeft > TH);
+    bool FC = (FrontCenter > TH);
+    bool FR = (FrontRight > TH);
+    
+    if (FC && (FL || FR)){
+        return true;
+    }
+    return false;
+}
+
+bool is_branch_B(void)
+{
+    bool BL = (BackLeft > TH);
+    bool BC = (BackCenter > TH);
+    bool BR = (BackRight > TH);
+    
+    if (BC && (BL || BR)){
+        return true;
+    }
+    return false;
+}
+
+bool is_T_F(void)
+{
+    bool FL = (FrontLeft > TH);
+    bool FC = (FrontCenter > TH);
+    bool FR = (FrontRight > TH);
+    
+    if (FC && FL && FR){
+        return true;
+    }
+    return false;
+}
+
+bool is_T_B(void)
+{
+    bool BL = (BackLeft > TH);
+    bool BC = (BackCenter > TH);
+    bool BR = (BackRight > TH);
+    
+    if (BC && BL && BR){
+        return true;
+    }
+    return false;
 }
