@@ -5,6 +5,7 @@
 #include "LineFollowing_HAL.h"
 // Hardware
 #include <xc.h>
+#include <sys/attribs.h>
 #include "ES_Configure.h"
 #include "ES_Framework.h"
 #include "ES_DeferRecall.h"
@@ -27,6 +28,9 @@ static FollowerState_t CurrentState;
 // with the introduction of Gen2, we need a module level Priority var as well
 static uint8_t MyPriority;
 
+static volatile uint16_t turn_latest_word = 100;
+volatile uint16_t cmd_pending = 0;
+volatile bool cmd_pending_valid = false;
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
  Function
@@ -52,24 +56,20 @@ bool InitFollowerService(uint8_t Priority)
   ES_Event_t ThisEvent;
   
   SPI1Follower_Init();
+  SPI1BUF = turn_latest_word;
+  IFS1bits.SPI1RXIF = 0;
+  IEC1bits.SPI1RXIE = 1;
+  IPC7bits.SPI1IP = 4; 
+  IPC7bits.SPI1IS = 0;
+  
   Servo_Init();
   //Flywheel_Init();
   Init_LineFollowing();
-  //DB_printf("SS1R=%u SDI1R=%u\r\n", (unsigned)SS1R, (unsigned)SDI1R);
-  
+
   TRISBbits.TRISB9 = 0;
   MyPriority = Priority;
   Servo_SetAngle(1, 90);
-//  DB_printf("SPI1CON=0x%08lx SPI1STAT=0x%08lx\n", SPI1CON, SPI1STAT);
-//  DB_printf("MSTEN=%d SSEN=%d MODE16=%d CKP=%d CKE=%d\n",
-//        SPI1CONbits.MSTEN, SPI1CONbits.SSEN, SPI1CONbits.MODE16,
-//        SPI1CONbits.CKP, SPI1CONbits.CKE);
-//  DB_printf("SS pin=%d\n", PORTBbits.RB4);
-  
-  
-  
-  
-  // put us into the Initial PseudoState
+
   CurrentState = InitPState;
   // post the initial transition event
   ThisEvent.EventType = ES_INIT;
@@ -140,6 +140,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         // initial state
 
         // now put the machine into the actual initial state
+        ES_Timer_InitTimer(RETURN_TIMER, 10);
         CurrentState = TestState;
       }
     }
@@ -152,23 +153,13 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
       {
         case ES_COMMU:  //If event is event one
         {   // Execute action function for state one : event one
-            SPI1Follower_LoadTx16(10);
+            //SPI1Follower_LoadTx16(10);
             LATBbits.LATB9 = 1;
             DB_printf("Received\n");
             //Servo_SetAngle(1, 60);
             //Servo_SetPalseWidth(1, 6500);
             //Flywheel_SetDuty(100);
             ES_Timer_InitTimer(Follower_TIMER, 500);
-        }
-        break;
-        
-        case ES_LINE:
-        {
-            ReadIRSensors();
-            float turn = LineFollowing_ComputeFrontTurn();
-            float LineFollowing_result = turn + 100.0f;
-            SPI1Follower_LoadTx16((uint16_t)LineFollowing_result);
-            
         }
         break;
 
@@ -180,15 +171,24 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //Servo_SetPalseWidth(1, 1500);
                 //ES_Timer_InitTimer(Follower_TIMER, 500);
             }
-        break;
-        
+            if (ThisEvent.EventParam == RETURN_TIMER){
+                ReadIRSensors();
+                if (is_T_F()){
+                    turn_latest_word = 0;
+                }else{
+                    float turn = LineFollowing_ComputeFrontTurn();
+                    turn_latest_word = (uint16_t)(turn + 100.0f);
+                }
+                 ES_Timer_InitTimer(RETURN_TIMER, 10);
+            }
         }
+        break;
         case ES_NEW_KEY:
         {
             if (ThisEvent.EventParam == 'b'){
                 
                 ReadIRSensors();
-                //printf("%d %d %d %d %d %d\r\n",LineFollowing_GetFrontLeft(),LineFollowing_GetFrontCenter(),LineFollowing_GetFrontRight(),LineFollowing_GetBackLeft(),LineFollowing_GetBackCenter(),LineFollowing_GetBackRight());
+                printf("%d %d %d %d %d %d\r\n",LineFollowing_GetFrontLeft(),LineFollowing_GetFrontCenter(),LineFollowing_GetFrontRight(),LineFollowing_GetBackLeft(),LineFollowing_GetBackCenter(),LineFollowing_GetBackRight());
                 float turn = LineFollowing_ComputeFrontTurn();
                 float LineFollowing_result = turn + 100.0f;
                 DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
@@ -267,5 +267,31 @@ void PrintTurn(float turn)
     DB_printf("turn is %c%u.0%u\r\n", sign, ip, fp);
     } else {
     DB_printf("turn is %c%u.%u\r\n", sign, ip, fp);
+    }
+}
+
+
+
+
+
+void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
+{
+    if (IFS1bits.SPI1RXIF == 0) {
+        return;
+    }
+    IFS1bits.SPI1RXIF = 0;
+
+    if (SPI1STATbits.SPIROV) SPI1STATCLR = (1u<<6);
+
+    uint16_t cmd = 0;
+    while (SPI1STATbits.SPIRBF) {
+        cmd = (uint16_t)SPI1BUF;
+    }
+
+    SPI1BUF = turn_latest_word;
+
+    if (cmd != 0x0002) {
+        cmd_pending = cmd;
+        cmd_pending_valid = true;
     }
 }

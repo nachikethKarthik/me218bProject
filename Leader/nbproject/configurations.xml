@@ -48,6 +48,7 @@
       <itemPath>ProjectHeaders/SPI1_CommHAL.h</itemPath>
       <itemPath>ProjectHeaders/LeaderService.h</itemPath>
       <itemPath>ProjectHeaders/Beacondetector.h</itemPath>
+      <itemPath>ProjectHeaders/RGB_HAL.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -63,6 +64,7 @@
       <itemPath>ProjectSource/PIC32_SPI_HAL.c</itemPath>
       <itemPath>ProjectSource/LeaderService.c</itemPath>
       <itemPath>ProjectSource/Beacondetector.c</itemPath>
+      <itemPath>ProjectSource/RGB_HAL.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

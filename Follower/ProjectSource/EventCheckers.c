@@ -151,6 +151,18 @@ bool CheckCommunication(void){
             ES_PostAll(ThisEvent);
             return true;
         }
+        if (w == 0x0011){
+            ES_Event_t ThisEvent;
+            ThisEvent.EventType = ES_LINE_F;
+            ES_PostAll(ThisEvent);
+            return true;
+        }
+        if (w == 0x0012){
+            ES_Event_t ThisEvent;
+            ThisEvent.EventType = ES_LINE_B;
+            ES_PostAll(ThisEvent);
+            return true;
+        }
     }
     return false;
 }

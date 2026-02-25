@@ -265,7 +265,9 @@ typedef enum
   ES_COMMU,
   ES_LINE,
   ES_LEFT,
-  ES_RIGHT
+  ES_RIGHT,
+  ES_LINE_F,
+  ES_LINE_B
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -310,7 +312,7 @@ typedef enum
 // priority in servicing them
 #define TIMER_UNUSED ((pPostFunc)0)
 #define TIMER0_RESP_FUNC PostFollowerService
-#define TIMER1_RESP_FUNC TIMER_UNUSED
+#define TIMER1_RESP_FUNC PostFollowerService
 #define TIMER2_RESP_FUNC TIMER_UNUSED
 #define TIMER3_RESP_FUNC TIMER_UNUSED
 #define TIMER4_RESP_FUNC TIMER_UNUSED
@@ -334,5 +336,6 @@ typedef enum
 // These symbolic names should be changed to be relevant to your application
 
 #define Follower_TIMER     0
+#define RETURN_TIMER       1
 
 #endif /* ES_CONFIGURE_H */

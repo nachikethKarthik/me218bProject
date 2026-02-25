@@ -18,5 +18,8 @@ void LineFollowing_ResetPD(void);
 float LineFollowing_ComputeFrontTurn(void);
 float LineFollowing_ComputeBackTurn(void);
 
-
+bool is_branch_F(void);
+bool is_T_F(void);
+bool is_branch_B(void);
+bool is_T_B(void);
 #endif // LineFollowing
