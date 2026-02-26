@@ -267,7 +267,12 @@ typedef enum
   ES_LEFT,
   ES_RIGHT,
   ES_LINE_F,
-  ES_LINE_B
+  ES_LINE_B,
+  ES_FLYWHEEL_ON,
+  ES_FLYWHEEL_OFF,
+  ES_SERVO0_0,
+  ES_SERVO0_180
+  
 }ES_EventType_t;
 
 /****************************************************************************/

@@ -5,8 +5,20 @@
 
 #define TICS_PER_MS      2500U
 
-#define SERVO_MIN_TICKS  1500U   //
-#define SERVO_MAX_TICKS  6500U   //
+//#define SERVO_MIN_TICKS  1500U
+//#define SERVO_MAX_TICKS  6500U
+
+static uint16_t SERVO_MIN_TICKS[3] = {
+    500U,
+    1500U,
+    900U
+};
+
+static uint16_t SERVO_MAX_TICKS[3] = {
+    2500U,
+    6500U,
+    2100U
+};
 
 #define PR3_20MS         (uint16_t)(TICS_PER_MS*20U - 1U)  // 20ms
 
@@ -65,14 +77,12 @@ void Servo_Init(void)
 
 void Servo_SetAngle(uint8_t id, uint8_t angle)
 {
-    if (angle > 180) angle = 180;
-
-    uint16_t pw = (uint16_t)(SERVO_MIN_TICKS +((uint16_t)angle * (uint16_t)(SERVO_MAX_TICKS - SERVO_MIN_TICKS)) / 180UL);
-
-    if (pw < SERVO_MIN_TICKS) pw = SERVO_MIN_TICKS;
-    if (pw > SERVO_MAX_TICKS) pw = SERVO_MAX_TICKS;
-
     if (id < 3) {
+        if (angle > 180) angle = 180;
+
+        uint16_t pw = (uint16_t)(SERVO_MIN_TICKS[id] +((uint16_t)angle * (uint16_t)(SERVO_MAX_TICKS[id] - SERVO_MIN_TICKS[id])) / 180UL);
+        if (pw < SERVO_MIN_TICKS[id]) pw = SERVO_MIN_TICKS[id];
+        if (pw > SERVO_MAX_TICKS[id]) pw = SERVO_MAX_TICKS[id];
         servo_pw_ticks[id] = pw;
     }
 }
@@ -80,8 +90,8 @@ void Servo_SetAngle(uint8_t id, uint8_t angle)
 
 void Servo_SetPalseWidth(uint8_t id, uint16_t pw){
     
-    if (pw < SERVO_MIN_TICKS) pw = SERVO_MIN_TICKS;
-    if (pw > SERVO_MAX_TICKS) pw = SERVO_MAX_TICKS;
+    if (pw < SERVO_MIN_TICKS[id]) pw = SERVO_MIN_TICKS[id];
+    if (pw > SERVO_MAX_TICKS[id]) pw = SERVO_MAX_TICKS[id];
     if (id < 3) {
         servo_pw_ticks[id] = pw;
     }

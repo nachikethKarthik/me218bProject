@@ -12,6 +12,9 @@
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "ES_Events.h"
+#include "ES_PostList.h"
+#include "ES_ServiceHeaders.h"
 
 /*----------------------------- Module Defines ----------------------------*/
 
@@ -64,7 +67,9 @@ bool InitFollowerService(uint8_t Priority)
   IPC7bits.SPI1IS = 0;
   
   Servo_Init();
-  //Flywheel_Init();
+  Flywheel_Init();
+  Flywheel_SetDuty(0);
+  
   Init_LineFollowing();
 
   TRISBbits.TRISB9 = 0;
@@ -205,6 +210,25 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             }
         }
         break;
+        case ES_FLYWHEEL_ON:
+        {
+            Flywheel_SetDuty(100);
+        }
+        break;
+        case ES_FLYWHEEL_OFF:
+        {
+            Flywheel_SetDuty(0);
+        }
+        break;
+        case ES_SERVO0_0:
+        {
+            Servo_SetAngle(0, 0);
+        }
+        break;
+        case ES_SERVO0_180:
+        {
+            Servo_SetAngle(0, 180);
+        }
         // repeat cases as required for relevant events
         default:
           ;
@@ -263,7 +287,19 @@ void PrintTurn(float turn)
 
 
 
-
+/*
+ * Cmd list:
+ * 0x0011 - return last front line following reading
+ * 0x0012 - return last back line following reading
+ * 0x0013 - return last back center reading
+ * 0x0014 - return last front center reading
+ * 0x0015 - Flywheel start
+ * 0x0016 - Flywheel stop
+ * 0x0021 - Servo_Arm(Servo 0) 0
+ * 0x0022 - Servo_Arm(Servo 0) 180
+ 
+ 
+ */
 
 void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
 {
@@ -280,9 +316,26 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }
     if (cmd == 0x0011){
         SPI1BUF = turn_latest_LineFollowing;
-    }
-    if (cmd == 0x0013){
+    }else if (cmd == 0x0013){
         SPI1BUF = turn_latest_BackCenter;
+    }else if (cmd == 0x0014){
+        
+    }else if (cmd == 0x0015){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_FLYWHEEL_ON;
+        PostFollowerService(ThisEvent);
+    }else if (cmd == 0x0016){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_FLYWHEEL_OFF;
+        PostFollowerService(ThisEvent);
+    }else if (cmd == 0x0021){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO0_0;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0022){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO0_180;
+        PostFollowerService(ThisEvent);
     }
 
 //    if (cmd != 0x00011) {
