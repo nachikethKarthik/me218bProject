@@ -29,6 +29,8 @@ static uint8_t MyPriority;
 static bool BeaconGDetected = false;
 static uint16_t base_speed;
 
+static bool FrontFollowing = false;
+static bool BackFollowing = false;
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
  Function
@@ -121,12 +123,15 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
       if (ThisEvent.EventType == ES_INIT)    // only respond to ES_Init
       {
 
-            //CurrentState = TestState;
-          CurrentState = LineFollowingState_1;
-          MotorHAL_SetSpeedCmdRPM(0, 20, 0);
-          MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-          base_speed = 20;
-          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
+          CurrentState = TestState;
+          
+          
+//          CurrentState = LineFollowingState_1;
+//          MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+//          MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+//          base_speed = 20;
+//          FrontFollowing = true;
+//          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 500);
           
           
           //CheckPoint3
@@ -282,6 +287,14 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                         RGB_TurnOff();
                     }
                     break;
+                    case 'f':
+                    {
+                        MotorHAL_DriveEncoderCount(0, 300);
+                        MotorHAL_DriveEncoderCount(1, 300);
+                        MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+                        MotorHAL_SetSpeedCmdRPM(1, 40, 1);
+                    }
+                    break;
                 }
             }
             break;
@@ -291,6 +304,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 DB_printf("%d\n",ThisEvent.EventParam);
             }
             break;  
+            
+            case ES_ACTION_DONE:
+            {
+                DB_printf("Action done!\r\n");
+            }
+            break;
             // repeat cases as required for relevant events
             default:
             ;
@@ -306,100 +325,101 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_TIMEOUT:
             {
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
-                    uint16_t R = SPI1Leader_RequestResponse16(0x0002);
-                    DB_printf("Turn is %d\r\n", R);
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0011);
+                    //DB_printf("Turn is %d\r\n", R);
                     
                     if (R == 0){
                         //MotorHAL_SetSpeedCmdRPM(0, 0, 0);
                         //MotorHAL_SetSpeedCmdRPM(1, 0, 0);
-                        CurrentState = LineFollowingState_2;
+                        //CurrentState = LineFollowingState_2;
                         
-                        MotorHAL_DriveEncoderCount(0, 250);
-                        MotorHAL_DriveEncoderCount(1, 250);
-                        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
-                        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-                        
-                        ES_Timer_InitTimer(ROTATION_TIMER, 3000);
-                        
-                    }else{
+                        //MotorHAL_DriveEncoderCount(0, 250);
+                        //MotorHAL_DriveEncoderCount(1, 250);
+                        FrontFollowing = false;
+                        MotorHAL_DriveEncoderCount(0, 150);
+                        MotorHAL_DriveEncoderCount(1, 150);
+                   
+                    }else if (FrontFollowing){
                         MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
                         MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 0);
                     }
                     
-                    
-//                    uint16_t m0 = MotorHAL_GetSpeedMeasRPM(0);
-//                    uint16_t m1 = MotorHAL_GetSpeedMeasRPM(1);
-//                    uint8_t duty0 = MotorHAL_GetDutyOut(0);
-//                    uint8_t duty1 = MotorHAL_GetDutyOut(1);
-//                    DB_printf("M0: %u RPM, Duty0: %u%% | M1: %u RPM, Duty1: %u%% \n", m0, duty0, m1, duty1);
-                    
-                    
                     ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                }
+                if (ThisEvent.EventParam == ROTATION_TIMER){
+                    ES_Timer_InitTimer(IS_ONLINE_TIMER, 100);
+                }
+                
+                if (ThisEvent.EventParam == IS_ONLINE_TIMER){
+                    
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0013);
+                    //DB_printf("%d\n",R);
+                    if (R >= 900){
+                        CurrentState = LineFollowingState_2;
+                        MotorHAL_DriveEncoderCount(0, 300);
+                        MotorHAL_DriveEncoderCount(1, 300);
+                        MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+                        ES_Timer_InitTimer(FORWARD_TIMER, 3000);
+                    }
+                    ES_Timer_InitTimer(IS_ONLINE_TIMER, 100);
                 }
             }
             break;
-            case ES_NEW_KEY:
+            
+            case ES_ACTION_DONE:
             {
-                if(ThisEvent.EventParam == 'r'){
-                    DB_printf("11111\n");
-                }
+                MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+                MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+                ES_Timer_InitTimer(ROTATION_TIMER, 500);
             }
+            break;
         }
     }   
     break;
     
-    case LineFollowingState_2: // After rotate 90, drive forward
-    {
-        switch (ThisEvent.EventType)
-        {
-            case ES_TIMEOUT:
-            {
-                if (ThisEvent.EventParam == ROTATION_TIMER){
-                    CurrentState = LineFollowingState_3;
-                    MotorHAL_DriveEncoderCount(0, 300);
-                    MotorHAL_DriveEncoderCount(1, 300);
-                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
-                    MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-                    ES_Timer_InitTimer(FORWARD_TIMER, 3000);
-                }
-            }
-        }
-    }
-    break;
-    
-    case LineFollowingState_3: // After drive forward, rotate 180
+    case LineFollowingState_2: // After drive forward, rotate 180
     {
         switch (ThisEvent.EventType)
         {
             case ES_TIMEOUT:
             {
                 if (ThisEvent.EventParam == FORWARD_TIMER){
-                    CurrentState = LineFollowingState_4;
                     MotorHAL_DriveEncoderCount(0, 550);
                     MotorHAL_DriveEncoderCount(1, 550);
                     MotorHAL_SetSpeedCmdRPM(0, 20, 1);
                     MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-                    ES_Timer_InitTimer(ROTATION_TIMER, 6000);
+                    ES_Timer_InitTimer(ROTATION_TIMER, 500);
+                }
+                if (ThisEvent.EventParam == ROTATION_TIMER){
+                    CurrentState = LineFollowingState_3;
+                    ES_Timer_InitTimer(IS_ONLINE_TIMER, 100);
                 }
             }
+            break;
         }
     }
     break;
     
-    case LineFollowingState_4: // After rotate 180, drive forward with line following
+    case LineFollowingState_3: // After rotate 180, drive forward with line following
     {
         switch (ThisEvent.EventType)
         {
             case ES_TIMEOUT:
             {
-                if (ThisEvent.EventParam == ROTATION_TIMER){
-                    CurrentState = LineFollowingState_5;
-                    MotorHAL_SetSpeedCmdRPM(0, 20, 1);
-                    MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-                    ES_Timer_InitTimer(FORWARD_TIMER, 6000);
-                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                if (ThisEvent.EventParam == IS_ONLINE_TIMER){
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0013);
+                    if (R >= 940){
+                        CurrentState = LineFollowingState_5;
+                        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+                        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+                        ES_Timer_InitTimer(FORWARD_TIMER, 6000);
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                    }
+                    ES_Timer_InitTimer(IS_ONLINE_TIMER, 100);
                 }
             }
+            break;
         }
     }
     break;
@@ -416,7 +436,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     MotorHAL_SetSpeedCmdRPM(1, 0, 0);
                 }
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
-                    uint16_t R = SPI1Leader_RequestResponse16(0x0002);
+                    uint16_t R = SPI1Leader_RequestResponse16(0x0011);
                     //DB_printf("Turn is %d\r\n", R);
 
                     MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
@@ -425,6 +445,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
                 }
             }
+            break;
         }
     }
     break;

@@ -139,18 +139,6 @@ bool CheckCommunication(void){
             //ThisEvent.EventParam  = GetNewKey(); 
             return true;
         }
-        if (w == 0x0003){
-            ES_Event_t ThisEvent;
-            ThisEvent.EventType = ES_LEFT;
-            ES_PostAll(ThisEvent);
-            return true;
-        }
-        if (w == 0x0004){
-            ES_Event_t ThisEvent;
-            ThisEvent.EventType = ES_RIGHT;
-            ES_PostAll(ThisEvent);
-            return true;
-        }
         if (w == 0x0011){
             ES_Event_t ThisEvent;
             ThisEvent.EventType = ES_LINE_F;

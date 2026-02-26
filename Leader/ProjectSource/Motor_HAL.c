@@ -1,6 +1,14 @@
 // Motor_HAL.c
 #include "Motor_HAL.h"
 #include "ES_CheckEvents.h"
+
+#include "ES_Configure.h"
+#include "ES_Framework.h"
+#include "ES_Events.h"
+#include "ES_PostList.h"
+#include "ES_ServiceHeaders.h"
+#include "ES_Port.h"
+
 #include <xc.h>
 #include <sys/attribs.h>
 #include <stdint.h>
@@ -316,12 +324,24 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
         if ((m[0].enc_count - m[0].start_count) >= m[0].drive_count){
             MotorHAL_SetSpeedCmdRPM(0, 0, 0);
             m[0].is_driving_fixed_dis = false;
+            
+            if (m[0].is_driving_fixed_dis == false && m[1].is_driving_fixed_dis == false){
+                ES_Event_t ThisEvent;
+                ThisEvent.EventType = ES_ACTION_DONE;
+                PostLeaderService(ThisEvent);
+            }
         }
     }
     if (m[1].is_driving_fixed_dis == true){
         if ((m[1].enc_count - m[1].start_count) >= m[1].drive_count){
             MotorHAL_SetSpeedCmdRPM(1, 0, 0);
             m[1].is_driving_fixed_dis = false;
+            
+            if (m[0].is_driving_fixed_dis == false && m[1].is_driving_fixed_dis == false){
+                ES_Event_t ThisEvent;
+                ThisEvent.EventType = ES_ACTION_DONE;
+                PostLeaderService(ThisEvent);
+            }
         }
     }
     

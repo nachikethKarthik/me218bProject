@@ -28,7 +28,8 @@ static FollowerState_t CurrentState;
 // with the introduction of Gen2, we need a module level Priority var as well
 static uint8_t MyPriority;
 
-static volatile uint16_t turn_latest_word = 100;
+static volatile uint16_t turn_latest_LineFollowing = 100;
+static volatile uint16_t turn_latest_BackCenter = 0;
 volatile uint16_t cmd_pending = 0;
 volatile bool cmd_pending_valid = false;
 /*------------------------------ Module Code ------------------------------*/
@@ -56,7 +57,7 @@ bool InitFollowerService(uint8_t Priority)
   ES_Event_t ThisEvent;
   
   SPI1Follower_Init();
-  SPI1BUF = turn_latest_word;
+  SPI1BUF = turn_latest_LineFollowing;
   IFS1bits.SPI1RXIF = 0;
   IEC1bits.SPI1RXIE = 1;
   IPC7bits.SPI1IP = 4; 
@@ -174,12 +175,13 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             if (ThisEvent.EventParam == RETURN_TIMER){
                 ReadIRSensors();
                 if (is_T_F()){
-                    turn_latest_word = 0;
+                    turn_latest_LineFollowing = 0;
                 }else{
                     float turn = LineFollowing_ComputeFrontTurn();
-                    turn_latest_word = (uint16_t)(turn + 100.0f);
+                    turn_latest_LineFollowing = (uint16_t)(turn + 100.0f);
                 }
-                 ES_Timer_InitTimer(RETURN_TIMER, 10);
+                turn_latest_BackCenter = LineFollowing_GetBackCenter();
+                ES_Timer_InitTimer(RETURN_TIMER, 10);
             }
         }
         break;
@@ -189,9 +191,10 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 
                 ReadIRSensors();
                 printf("%d %d %d %d %d %d\r\n",LineFollowing_GetFrontLeft(),LineFollowing_GetFrontCenter(),LineFollowing_GetFrontRight(),LineFollowing_GetBackLeft(),LineFollowing_GetBackCenter(),LineFollowing_GetBackRight());
+                DB_printf("BackCenter is %d\r\n", turn_latest_BackCenter);
                 float turn = LineFollowing_ComputeFrontTurn();
                 float LineFollowing_result = turn + 100.0f;
-                DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
+                //DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
                 //PrintTurn(turn);
             } 
             if (ThisEvent.EventParam == 'l'){
@@ -201,18 +204,6 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 Servo_SetAngle(1, 180);
             }
         }
-        break;
-        
-        case ES_LEFT:
-        {
-            Servo_SetAngle(1, 0);
-        }
-        break;
-        
-        case ES_RIGHT:
-        {
-            Servo_SetAngle(1, 180);
-        }  
         break;
         // repeat cases as required for relevant events
         default:
@@ -287,11 +278,15 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     while (SPI1STATbits.SPIRBF) {
         cmd = (uint16_t)SPI1BUF;
     }
-
-    SPI1BUF = turn_latest_word;
-
-    if (cmd != 0x0002) {
-        cmd_pending = cmd;
-        cmd_pending_valid = true;
+    if (cmd == 0x0011){
+        SPI1BUF = turn_latest_LineFollowing;
     }
+    if (cmd == 0x0013){
+        SPI1BUF = turn_latest_BackCenter;
+    }
+
+//    if (cmd != 0x00011) {
+//        cmd_pending = cmd;
+//        cmd_pending_valid = true;
+//    }
 }
