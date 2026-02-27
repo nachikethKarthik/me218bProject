@@ -33,6 +33,7 @@ static uint8_t MyPriority;
 
 static volatile uint16_t turn_latest_LineFollowing = 100;
 static volatile uint16_t turn_latest_BackCenter = 0;
+static volatile uint16_t turn_latest_FrontCenter = 0;
 volatile uint16_t cmd_pending = 0;
 volatile bool cmd_pending_valid = false;
 /*------------------------------ Module Code ------------------------------*/
@@ -186,6 +187,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                     turn_latest_LineFollowing = (uint16_t)(turn + 100.0f);
                 }
                 turn_latest_BackCenter = LineFollowing_GetBackCenter();
+                turn_latest_FrontCenter = LineFollowing_GetFrontCenter();
                 ES_Timer_InitTimer(RETURN_TIMER, 10);
             }
         }
@@ -203,21 +205,31 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //PrintTurn(turn);
             } 
             if (ThisEvent.EventParam == 'l'){
-                Servo_SetAngle(1, 0);
+                Servo_SetAngle(0, 0);
             }
             if (ThisEvent.EventParam == 'r'){
-                Servo_SetAngle(1, 180);
+                Servo_SetAngle(0, 180);
+            }
+            if (ThisEvent.EventParam == 'f'){
+                Flywheel_SetDuty(70);
+                DB_printf("Cmd received\n");
+            }
+            if (ThisEvent.EventParam == 's'){
+                Flywheel_SetDuty(100);
+                //DB_printf("Cmd received\n");
             }
         }
         break;
         case ES_FLYWHEEL_ON:
         {
             Flywheel_SetDuty(100);
+            DB_printf("Flywheel\n");
         }
         break;
         case ES_FLYWHEEL_OFF:
         {
-            Flywheel_SetDuty(0);
+            Flywheel_SetDuty(10);
+            
         }
         break;
         case ES_SERVO0_0:
@@ -319,7 +331,7 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }else if (cmd == 0x0013){
         SPI1BUF = turn_latest_BackCenter;
     }else if (cmd == 0x0014){
-        
+        SPI1BUF = turn_latest_FrontCenter;
     }else if (cmd == 0x0015){
         ES_Event_t ThisEvent;
         ThisEvent.EventType = ES_FLYWHEEL_ON;

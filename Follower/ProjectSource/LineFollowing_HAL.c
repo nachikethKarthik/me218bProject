@@ -21,7 +21,7 @@ static uint32_t BackLeft    = 0;
 static uint32_t BackCenter  = 0;
 static uint32_t BackRight   = 0;
 
-static uint32_t TH = 900;
+static uint32_t TH = 850;
 
 
 // PD state (use float)

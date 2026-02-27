@@ -9,15 +9,15 @@
 //#define SERVO_MAX_TICKS  6500U
 
 static uint16_t SERVO_MIN_TICKS[3] = {
-    500U,
     1500U,
-    900U
+    1500U,
+    1600U
 };
 
 static uint16_t SERVO_MAX_TICKS[3] = {
-    2500U,
+    4800U,
     6500U,
-    2100U
+    5800U
 };
 
 #define PR3_20MS         (uint16_t)(TICS_PER_MS*20U - 1U)  // 20ms
