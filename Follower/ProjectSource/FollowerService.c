@@ -34,6 +34,7 @@ static uint8_t MyPriority;
 static volatile uint16_t turn_latest_LineFollowing = 100;
 static volatile uint16_t turn_latest_BackCenter = 0;
 static volatile uint16_t turn_latest_FrontCenter = 0;
+static volatile uint16_t turn_latest_FrontLeft = 0;
 volatile uint16_t cmd_pending = 0;
 volatile bool cmd_pending_valid = false;
 /*------------------------------ Module Code ------------------------------*/
@@ -188,6 +189,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 }
                 turn_latest_BackCenter = LineFollowing_GetBackCenter();
                 turn_latest_FrontCenter = LineFollowing_GetFrontCenter();
+                turn_latest_FrontLeft = LineFollowing_GetFrontLeft();
                 ES_Timer_InitTimer(RETURN_TIMER, 10);
             }
         }
@@ -211,7 +213,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 Servo_SetAngle(0, 180);
             }
             if (ThisEvent.EventParam == 'f'){
-                Flywheel_SetDuty(70);
+                Flywheel_SetDuty(10);
                 DB_printf("Cmd received\n");
             }
             if (ThisEvent.EventParam == 's'){
@@ -304,7 +306,7 @@ void PrintTurn(float turn)
  * 0x0011 - return last front line following reading
  * 0x0012 - return last back line following reading
  * 0x0013 - return last back center reading
- * 0x0014 - return last front center reading
+ * 0x0014 - return last front left reading
  * 0x0015 - Flywheel start
  * 0x0016 - Flywheel stop
  * 0x0021 - Servo_Arm(Servo 0) 0
@@ -331,7 +333,7 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }else if (cmd == 0x0013){
         SPI1BUF = turn_latest_BackCenter;
     }else if (cmd == 0x0014){
-        SPI1BUF = turn_latest_FrontCenter;
+        SPI1BUF = turn_latest_FrontLeft;
     }else if (cmd == 0x0015){
         ES_Event_t ThisEvent;
         ThisEvent.EventType = ES_FLYWHEEL_ON;
