@@ -361,6 +361,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             
             case ES_ACTION_DONE:
             {
+                DB_printf("start rotate 90\n");
                 CurrentState = LineFollowingState_2;
                 MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                 MotorHAL_SetSpeedCmdRPM(1, 30, 0);
@@ -381,19 +382,19 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_TIMEOUT:
             {
-                if (ThisEvent.EventParam == FORWARD_TIMER){
-                    
-                    // 2 seconds are up: stop line-follow updates before starting the 180 turn
-                    //ES_Timer_StopTimer(LINEFOLLOWING_TIMER);
-
-                    DB_printf("Go to state3!\n");
-                    is_Forward_Timer_on = true;
-                    MotorHAL_DriveEncoderCount(0, 510);
-                    MotorHAL_DriveEncoderCount(1, 510);
-                    MotorHAL_SetSpeedCmdRPM(0, 30, 1);
-                    MotorHAL_SetSpeedCmdRPM(1, 30, 0);
-                    CurrentState = LineFollowingState_3;
-                }
+//                if (ThisEvent.EventParam == FORWARD_TIMER){
+//                    
+//                    // 2 seconds are up: stop line-follow updates before starting the 180 turn
+//                    //ES_Timer_StopTimer(LINEFOLLOWING_TIMER);
+//
+//                    DB_printf("Go to state3!\n");
+//                    is_Forward_Timer_on = true;
+//                    MotorHAL_DriveEncoderCount(0, 510);
+//                    MotorHAL_DriveEncoderCount(1, 510);
+//                    MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+//                    MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+//                    CurrentState = LineFollowingState_3;
+//                }
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
                     
                     uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0011);
@@ -409,17 +410,14 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             break;
             case ES_ACTION_DONE:
             {
-                if(is_Forward_Timer_on){
-                    DB_printf("Action in state2 is done\n");
-                    is_Forward_Timer_on = false;
-                    MotorHAL_SetSpeedCmdRPM(0, 40, 0);
-                    MotorHAL_SetSpeedCmdRPM(1, 40, 0);
-//                    MotorHAL_DriveEncoderCount(0, 600);
-//                    MotorHAL_DriveEncoderCount(1, 600);
-                    //CurrentState = LineFollowingState_3;
-                    ES_Timer_InitTimer(FORWARD_TIMER, 2000);
-                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-                }
+                DB_printf("finish rotate 90, start forward\n");
+                MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+                MotorHAL_DriveEncoderCount(0, 600);
+                MotorHAL_DriveEncoderCount(1, 600);
+                CurrentState = LineFollowingState_3;
+                //ES_Timer_InitTimer(FORWARD_TIMER, 2000);
+                ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
             }
             break;
         }
@@ -432,12 +430,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_TIMEOUT:
             {
-                if (ThisEvent.EventParam == FORWARD_TIMER){
-                    CurrentState = LineFollowingState_4;
-                    DB_printf("Start Line 4\n");
-                    MotorHAL_SetSpeedCmdRPM(0, 0, 0);
-                    MotorHAL_SetSpeedCmdRPM(1, 0, 0);
-                }
+//                if (ThisEvent.EventParam == FORWARD_TIMER){
+//                    CurrentState = LineFollowingState_4;
+//                    DB_printf("Start Line 4\n");
+//                    MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+//                    MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+//                }
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
                     
                     
@@ -460,13 +458,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             break;
             case ES_ACTION_DONE:
             {
-                if(is_Forward_Timer_on){
-                    is_Forward_Timer_on = false;
-                    ES_Timer_InitTimer(FORWARD_TIMER, 5000);
-                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-                    MotorHAL_SetSpeedCmdRPM(0, 30, 0);
-                    MotorHAL_SetSpeedCmdRPM(1, 30, 0);
-                }
+                DB_printf("Finish forward, start rotate 180\n");
+                MotorHAL_DriveEncoderCount(0, 510);
+                MotorHAL_DriveEncoderCount(1, 510);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                CurrentState = LineFollowingState_4;
             }
             break;           
         }
@@ -475,63 +472,68 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     
     case LineFollowingState_4:
     {
-//        switch (ThisEvent.EventType)
-//        {
-//            case ES_ACTION_DONE:
-//            {
-//                    MotorHAL_DriveEncoderCount(0, 800);
-//                    MotorHAL_DriveEncoderCount(1, 800);
-//                    MotorHAL_SetSpeedCmdRPM(0, 40, 0);
-//                    MotorHAL_SetSpeedCmdRPM(1, 40, 0);
-//                    CurrentState = LineFollowingState_5;
-//                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-//            }
-//            break;
-//
-////            case ES_TIMEOUT:
-////            {
-////                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
-////
-////
-////                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0011);
-////                    if ((R == 0)){
-////                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-////                    }else{
-////                         MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
-////                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 0);
-////                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-////                    }
-////                }
-////            }
-////            break;
-//        }
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                //ES_Timer_InitTimer(FORWARD_TIMER, 5000);
+                DB_printf("Finish rotate 180, start forward\n");
+                ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                MotorHAL_DriveEncoderCount(0, 800);
+                MotorHAL_DriveEncoderCount(1, 800);
+                MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+                CurrentState = LineFollowingState_5;
+            }
+            break;
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){                
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0011);
+                    if ((R == 0)){
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                    }else{
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 0);
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                    }
+                }
+            }
+            break;
+        }
     }
     break;
     
-//    case LineFollowingState_5:
-//    {
-//        switch (ThisEvent.EventType)
-//        {
-//        
-//        case ES_TIMEOUT:
-//            {
-//                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
-//
-//
-//                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0011);
-//                    if ((R == 0)){
-//                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-//                    }else{
-//                         MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
-//                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 0);
-//                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
-//                    }
-//                }
-//            }
-//            break;
-//        }
-//    }
-    
+    case LineFollowingState_5:
+    {
+        switch (ThisEvent.EventType)
+        {
+        
+            case ES_ACTION_DONE:
+            {
+                //ES_Timer_InitTimer(FORWARD_TIMER, 5000);
+                DB_printf("Done\n");
+                MotorHAL_SetSpeedCmdRPM(0, 0, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 0, 0);
+            }
+            break;
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){                
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0011);
+                    if ((R == 0)){
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                    }else{
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 0);
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 0);
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
+                    }
+                }
+            }
+            break;
+        }
+    }
+    break;
     
     case CheckPoint3State_1:
     { 
