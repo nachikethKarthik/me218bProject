@@ -413,8 +413,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 DB_printf("finish rotate 90, start forward\n");
                 MotorHAL_SetSpeedCmdRPM(0, 40, 0);
                 MotorHAL_SetSpeedCmdRPM(1, 40, 0);
-                MotorHAL_DriveEncoderCount(0, 600);
-                MotorHAL_DriveEncoderCount(1, 600);
+                MotorHAL_DriveEncoderCount(0, 400);
+                MotorHAL_DriveEncoderCount(1, 400);
                 CurrentState = LineFollowingState_3;
                 //ES_Timer_InitTimer(FORWARD_TIMER, 2000);
                 ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
@@ -458,6 +458,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             break;
             case ES_ACTION_DONE:
             {
+                ES_Timer_StopTimer(LINEFOLLOWING_TIMER);
                 DB_printf("Finish forward, start rotate 180\n");
                 MotorHAL_DriveEncoderCount(0, 510);
                 MotorHAL_DriveEncoderCount(1, 510);
@@ -478,11 +479,15 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             {
                 //ES_Timer_InitTimer(FORWARD_TIMER, 5000);
                 DB_printf("Finish rotate 180, start forward\n");
+                SPI1Leader_SendCmd16(0x0015);
+                //uint16_t R = SPI1Leader_RequestResponse16(0x0015);
+                ES_Timer_StartTimer(LINEFOLLOWING_TIMER);
                 ES_Timer_InitTimer(LINEFOLLOWING_TIMER, 100);
                 MotorHAL_DriveEncoderCount(0, 800);
                 MotorHAL_DriveEncoderCount(1, 800);
-                MotorHAL_SetSpeedCmdRPM(0, 40, 0);
-                MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+                MotorHAL_SetSpeedCmdRPM(0, 5, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 5, 0);
+                base_speed = 5;
                 CurrentState = LineFollowingState_5;
             }
             break;

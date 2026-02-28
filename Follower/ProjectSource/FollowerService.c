@@ -70,7 +70,7 @@ bool InitFollowerService(uint8_t Priority)
   
   Servo_Init();
   Flywheel_Init();
-  Flywheel_SetDuty(0);
+  Flywheel_SetDuty(100);
   
   Init_LineFollowing();
 
@@ -213,7 +213,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 Servo_SetAngle(0, 180);
             }
             if (ThisEvent.EventParam == 'f'){
-                Flywheel_SetDuty(10);
+                Flywheel_SetDuty(1);
                 DB_printf("Cmd received\n");
             }
             if (ThisEvent.EventParam == 's'){
@@ -224,13 +224,13 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         break;
         case ES_FLYWHEEL_ON:
         {
-            Flywheel_SetDuty(100);
+            Flywheel_SetDuty(1);
             DB_printf("Flywheel\n");
         }
         break;
         case ES_FLYWHEEL_OFF:
         {
-            Flywheel_SetDuty(10);
+            Flywheel_SetDuty(100);
             
         }
         break;
