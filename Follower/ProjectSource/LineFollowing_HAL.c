@@ -8,8 +8,8 @@
 
 #define CHANNEL_SET  ((1u<<0)|(1u<<1)|(1u<<4)|(1u<<5)|(1u<<11)|(1u<<12))
 
-#define KP        40.0f
-#define KD        30.0f
+#define KP        40.0f //40
+#define KD        15.0f //30
 
 static uint32_t ADCResults[8];
 

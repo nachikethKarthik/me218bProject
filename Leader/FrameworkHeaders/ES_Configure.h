@@ -47,7 +47,7 @@
 // the name of the run function
 #define SERV_0_RUN RunLeaderService
 // How big should this services Queue be?
-#define SERV_0_QUEUE_SIZE 5
+#define SERV_0_QUEUE_SIZE 50
 
 /****************************************************************************/
 // The following sections are used to define the parameters for each of the
