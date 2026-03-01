@@ -270,10 +270,12 @@ typedef enum
   ES_LINE_B,
   ES_FLYWHEEL_ON,
   ES_FLYWHEEL_OFF,
-  ES_SERVO0_0,
-  ES_SERVO0_180,
-  ES_SERVO1_0,
-  ES_SERVO1_180
+  ES_SERVO0_Idel,
+  ES_SERVO0_Rise,
+  ES_SERVO1_Idel,
+  ES_SERVO1_Rise,
+  ES_SERVO2_Idel,
+  ES_SERVO2_Rise
   
 }ES_EventType_t;
 

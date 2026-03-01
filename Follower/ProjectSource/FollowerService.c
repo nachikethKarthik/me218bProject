@@ -36,6 +36,7 @@ static FollowerState_t CurrentState;
 static uint8_t MyPriority;
 
 static volatile uint16_t turn_latest_LineFollowing = 100;
+static volatile uint16_t turn_latest_LineFollowing_B = 100;
 static volatile uint16_t turn_latest_BackCenter = 0;
 static volatile uint16_t turn_latest_FrontCenter = 0;
 static volatile uint16_t turn_latest_FrontLeft = 0;
@@ -86,7 +87,10 @@ bool InitFollowerService(uint8_t Priority)
   Servo_Init();
   Servo_SetAngle(1, 90);
   Servo_SetAngle(0, 20);
-  Servo_SetAngle(2, 0);
+  Servo_SetAngle(2, 180);
+  Servo_SetAngle_Step(1, 90);
+  Servo_SetAngle_Step(0, 20);
+  Servo_SetAngle_Step(2, 180);
   Servo_SyncCurrentToOutput();
   
   CurrentState = InitPState;
@@ -196,9 +200,17 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 if (is_T_F()){
                     turn_latest_LineFollowing = 0;
                 }else{
-                    float turn = LineFollowing_ComputeFrontTurn();
-                    turn_latest_LineFollowing = (uint16_t)(turn + 100.0f);
+                    float turn_F = LineFollowing_ComputeFrontTurn();
+                    turn_latest_LineFollowing = (uint16_t)(turn_F + 100.0f);
                 }
+                if (is_T_B()){
+                    turn_latest_LineFollowing_B = 0;
+                }else{
+                    float turn_B = LineFollowing_ComputeBackTurn();
+                    turn_latest_LineFollowing_B = (uint16_t)(turn_B + 100.0f);
+                }
+                
+                
                 turn_latest_BackCenter = LineFollowing_GetBackCenter();
                 turn_latest_FrontCenter = LineFollowing_GetFrontCenter();
                 turn_latest_FrontLeft = LineFollowing_GetFrontLeft();
@@ -253,27 +265,36 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             
         }
         break;
-        case ES_SERVO0_0:
+        case ES_SERVO0_Idel:
         {
-            Servo_SetAngle(0, 0);
+            Servo_SetAngle_Step(0, 20);
         }
         break;
-        case ES_SERVO0_180:
+        case ES_SERVO0_Rise:
         {
-            Servo_SetAngle(0, 180);
+            Servo_SetAngle_Step(0, 90);
         }
         break;
-        case ES_SERVO1_0:
+        case ES_SERVO1_Idel:
         {
             Servo_SetAngle(1, 0);
         }
         break;
-        case ES_SERVO1_180:
+        case ES_SERVO1_Rise:
         {
             Servo_SetAngle(1, 180);
         }
         break;
-        
+        case ES_SERVO2_Idel:
+        {
+            Servo_SetAngle_Step(2, 180);
+        }
+        break;
+        case ES_SERVO2_Rise:
+        {
+            Servo_SetAngle_Step(2, 90);
+        }
+        break;
         // repeat cases as required for relevant events
         default:
           ;
@@ -340,11 +361,12 @@ void PrintTurn(float turn)
  * 0x0014 - return last front left reading
  * 0x0015 - Flywheel start
  * 0x0016 - Flywheel stop
- * 0x0021 - Servo_Arm(Servo 0) 0
- * 0x0022 - Servo_Arm(Servo 0) 180
- * 0x0023 - Servo_Indicator (Servo 1) 0
- * 0x0024 - Servo_Indicator (Servo 1) 180
- 
+ * 0x0021 - Servo_Arm(Servo 0) idel
+ * 0x0022 - Servo_Arm(Servo 0) rise
+ * 0x0023 - Servo_Indicator (Servo 1) idel
+ * 0x0024 - Servo_Indicator (Servo 1) rise
+ * 0x0025 - Servo_Trapdoor(Servo 2) idel
+ * 0x0026 - Servo_Trapdoor(Servo 2) rise
  
  */
 
@@ -363,6 +385,8 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }
     if (cmd == 0x0011){
         SPI1BUF = turn_latest_LineFollowing;
+    }else if (cmd == 0x0012){
+        SPI1BUF = turn_latest_LineFollowing_B;
     }else if (cmd == 0x0013){
         SPI1BUF = turn_latest_BackCenter;
     }else if (cmd == 0x0014){
@@ -377,19 +401,27 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
         PostFollowerService(ThisEvent);
     }else if (cmd == 0x0021){
         ES_Event_t ThisEvent;
-        ThisEvent.EventType = ES_SERVO0_0;
+        ThisEvent.EventType = ES_SERVO0_Idel;
         PostFollowerService(ThisEvent);
     }else if(cmd == 0x0022){
         ES_Event_t ThisEvent;
-        ThisEvent.EventType = ES_SERVO0_180;
+        ThisEvent.EventType = ES_SERVO0_Rise;
         PostFollowerService(ThisEvent);
     }else if(cmd == 0x0023){
         ES_Event_t ThisEvent;
-        ThisEvent.EventType = ES_SERVO1_0;
+        ThisEvent.EventType = ES_SERVO1_Idel;
         PostFollowerService(ThisEvent);
     }else if(cmd == 0x0024){
         ES_Event_t ThisEvent;
-        ThisEvent.EventType = ES_SERVO1_180;
+        ThisEvent.EventType = ES_SERVO1_Rise;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0025){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO2_Idel;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0026){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO2_Rise;
         PostFollowerService(ThisEvent);
     }
 

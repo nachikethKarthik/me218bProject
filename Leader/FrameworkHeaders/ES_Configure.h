@@ -249,7 +249,7 @@ typedef enum
 #define TIMER2_RESP_FUNC PostLeaderService
 #define TIMER3_RESP_FUNC PostLeaderService
 #define TIMER4_RESP_FUNC PostLeaderService
-#define TIMER5_RESP_FUNC TIMER_UNUSED
+#define TIMER5_RESP_FUNC PostLeaderService
 #define TIMER6_RESP_FUNC TIMER_UNUSED
 #define TIMER7_RESP_FUNC TIMER_UNUSED
 #define TIMER8_RESP_FUNC TIMER_UNUSED
@@ -273,5 +273,6 @@ typedef enum
 #define ROTATION_TIMER           2
 #define FORWARD_TIMER            3
 #define IS_ONLINE_TIMER          4
+#define TRAPDOOR_TIMER           5
 
 #endif /* ES_CONFIGURE_H */

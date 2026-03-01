@@ -37,6 +37,8 @@ static bool BackFollowing = false;
 static bool FrontT = false;
 
 static bool is_Forward_Timer_on = true;
+
+static uint8_t suck_count;
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
  Function
@@ -130,7 +132,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
       if (ThisEvent.EventType == ES_INIT)    // only respond to ES_Init
       {
 
-          CurrentState = TestState;
+          //CurrentState = TestState;
           
           
 //          CurrentState = LineFollowingState_1;
@@ -142,10 +144,10 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
 //          FrontT = true;
 //          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
           
-//        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
-//        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-//        CurrentState = Field_Determine_State_1;
-//        BeaconDetector_Arm();
+        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+        CurrentState = Field_Determine_State_1;
+        BeaconDetector_Arm();
         
         
       }
@@ -592,6 +594,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                 MotorHAL_SetSpeedCmdRPM(1, 30, 1);
                 CurrentState = LineFollowingState_6;
+                
+                suck_count = 1;
             }
             break;
             case ES_TIMEOUT:
@@ -623,13 +627,14 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 MotorHAL_SetSpeedCmdRPM(0, 30, 0);
                 MotorHAL_SetSpeedCmdRPM(1, 30, 0);
                 CurrentState = LineFollowingState_7;
+                suck_count += 1;
             }
             break;
         }
     }
     break;
     
-        case LineFollowingState_7:
+    case LineFollowingState_7:
     {
         switch (ThisEvent.EventType)
         {
@@ -639,13 +644,82 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 MotorHAL_DriveEncoderCount(1, 100);
                 MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                 MotorHAL_SetSpeedCmdRPM(1, 30, 1);
-                CurrentState = LineFollowingState_6;
+                
+                if (suck_count < 3){
+                    CurrentState = LineFollowingState_6;
+                }else{
+                    CurrentState = Seesaw1_State_1;
+                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                }
+                
             }
             break;
         }
     }
     break;
     
+    case Seesaw1_State_1:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                MotorHAL_SetSpeedCmdRPM(0, 40, 1);
+                MotorHAL_SetSpeedCmdRPM(1, 40, 1);
+                uint16_t A = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
+                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
+                base_speed = 40;
+            }
+            break;
+            
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){                
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0012);
+                    if ((R == 0)){
+                        CurrentState = Seesaw1_State_2;
+                        MotorHAL_DriveEncoderCount(0, 60);
+                        MotorHAL_DriveEncoderCount(1, 60);
+                    }else{
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed + R + 100UL, 0);
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R - 100UL, 0);
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                    }
+                }
+            }
+            break;
+            
+        }
+    }
+    break;
+    
+    case Seesaw1_State_2:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
+                ES_Timer_InitTimer(TRAPDOOR_TIMER, 3000);
+            }
+            break;
+            
+            case ES_TIMEOUT:
+            {
+                if(ThisEvent.EventParam == TRAPDOOR_TIMER){
+                    CurrentState = Seesaw1_State_3;
+                }
+            }
+            break;
+            
+        }
+    }
+    break;
+    case Seesaw1_State_3:
+    {
+
+    }
+
     
     case CheckPoint3State_1:
     { 
