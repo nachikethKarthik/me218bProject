@@ -267,7 +267,14 @@ typedef enum
   ES_LEFT,
   ES_RIGHT,
   ES_LINE_F,
-  ES_LINE_B
+  ES_LINE_B,
+  ES_FLYWHEEL_ON,
+  ES_FLYWHEEL_OFF,
+  ES_SERVO0_0,
+  ES_SERVO0_180,
+  ES_SERVO1_0,
+  ES_SERVO1_180
+  
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -313,7 +320,7 @@ typedef enum
 #define TIMER_UNUSED ((pPostFunc)0)
 #define TIMER0_RESP_FUNC PostFollowerService
 #define TIMER1_RESP_FUNC PostFollowerService
-#define TIMER2_RESP_FUNC TIMER_UNUSED
+#define TIMER2_RESP_FUNC PostFollowerService
 #define TIMER3_RESP_FUNC TIMER_UNUSED
 #define TIMER4_RESP_FUNC TIMER_UNUSED
 #define TIMER5_RESP_FUNC TIMER_UNUSED
@@ -337,5 +344,6 @@ typedef enum
 
 #define Follower_TIMER     0
 #define RETURN_TIMER       1
+#define SERVO_TIMER        2
 
 #endif /* ES_CONFIGURE_H */

@@ -12,8 +12,15 @@
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "ES_Events.h"
+#include "ES_PostList.h"
+#include "ES_ServiceHeaders.h"
 
 /*----------------------------- Module Defines ----------------------------*/
+
+#define Servo_MS      100
+
+
 
 /*---------------------------- Module Functions ---------------------------*/
 /* prototypes for private functions for this machine.They should be functions
@@ -28,9 +35,14 @@ static FollowerState_t CurrentState;
 // with the introduction of Gen2, we need a module level Priority var as well
 static uint8_t MyPriority;
 
-static volatile uint16_t turn_latest_word = 100;
+static volatile uint16_t turn_latest_LineFollowing = 100;
+static volatile uint16_t turn_latest_BackCenter = 0;
+static volatile uint16_t turn_latest_FrontCenter = 0;
+static volatile uint16_t turn_latest_FrontLeft = 0;
 volatile uint16_t cmd_pending = 0;
 volatile bool cmd_pending_valid = false;
+
+
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
  Function
@@ -56,20 +68,27 @@ bool InitFollowerService(uint8_t Priority)
   ES_Event_t ThisEvent;
   
   SPI1Follower_Init();
-  SPI1BUF = turn_latest_word;
+  SPI1BUF = turn_latest_LineFollowing;
   IFS1bits.SPI1RXIF = 0;
   IEC1bits.SPI1RXIE = 1;
   IPC7bits.SPI1IP = 4; 
   IPC7bits.SPI1IS = 0;
   
-  Servo_Init();
-  //Flywheel_Init();
+  Flywheel_Init();
+  Flywheel_SetDuty(100);
+  
   Init_LineFollowing();
 
   TRISBbits.TRISB9 = 0;
   MyPriority = Priority;
+  
+  // Servo Init
+  Servo_Init();
   Servo_SetAngle(1, 90);
-
+  Servo_SetAngle(0, 20);
+  Servo_SetAngle(2, 0);
+  Servo_SyncCurrentToOutput();
+  
   CurrentState = InitPState;
   // post the initial transition event
   ThisEvent.EventType = ES_INIT;
@@ -173,14 +192,19 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             }
             if (ThisEvent.EventParam == RETURN_TIMER){
                 ReadIRSensors();
+                Servo_Angle_Step();
                 if (is_T_F()){
-                    turn_latest_word = 0;
+                    turn_latest_LineFollowing = 0;
                 }else{
                     float turn = LineFollowing_ComputeFrontTurn();
-                    turn_latest_word = (uint16_t)(turn + 100.0f);
+                    turn_latest_LineFollowing = (uint16_t)(turn + 100.0f);
                 }
-                 ES_Timer_InitTimer(RETURN_TIMER, 10);
+                turn_latest_BackCenter = LineFollowing_GetBackCenter();
+                turn_latest_FrontCenter = LineFollowing_GetFrontCenter();
+                turn_latest_FrontLeft = LineFollowing_GetFrontLeft();
+                ES_Timer_InitTimer(RETURN_TIMER, 10);
             }
+            
         }
         break;
         case ES_NEW_KEY:
@@ -189,31 +213,67 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 
                 ReadIRSensors();
                 printf("%d %d %d %d %d %d\r\n",LineFollowing_GetFrontLeft(),LineFollowing_GetFrontCenter(),LineFollowing_GetFrontRight(),LineFollowing_GetBackLeft(),LineFollowing_GetBackCenter(),LineFollowing_GetBackRight());
+                DB_printf("BackCenter is %d\r\n", turn_latest_BackCenter);
                 float turn = LineFollowing_ComputeFrontTurn();
                 float LineFollowing_result = turn + 100.0f;
-                DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
+                //DB_printf("Turn is %d\r\n", (int)LineFollowing_result);
                 //PrintTurn(turn);
             } 
             if (ThisEvent.EventParam == 'l'){
-                Servo_SetAngle(1, 0);
+                Servo_SetAngle_Step(0, 20);
             }
             if (ThisEvent.EventParam == 'r'){
-                Servo_SetAngle(1, 180);
+                Servo_SetAngle_Step(0, 90);
+            }
+            if (ThisEvent.EventParam == 'f'){
+                Flywheel_SetDuty(1);
+                DB_printf("Cmd received\n");
+            }
+            if (ThisEvent.EventParam == 's'){
+                Flywheel_SetDuty(100);
+                //DB_printf("Cmd received\n");
+            }
+            if (ThisEvent.EventParam == 'a'){
+                Servo_SetAngle_Step(2, 20);
+            }
+            if (ThisEvent.EventParam == 'c'){
+                Servo_SetAngle_Step(2, 90);
             }
         }
         break;
-        
-        case ES_LEFT:
+        case ES_FLYWHEEL_ON:
+        {
+            Flywheel_SetDuty(1);
+            DB_printf("Flywheel\n");
+        }
+        break;
+        case ES_FLYWHEEL_OFF:
+        {
+            Flywheel_SetDuty(100);
+            
+        }
+        break;
+        case ES_SERVO0_0:
+        {
+            Servo_SetAngle(0, 0);
+        }
+        break;
+        case ES_SERVO0_180:
+        {
+            Servo_SetAngle(0, 180);
+        }
+        break;
+        case ES_SERVO1_0:
         {
             Servo_SetAngle(1, 0);
         }
         break;
-        
-        case ES_RIGHT:
+        case ES_SERVO1_180:
         {
             Servo_SetAngle(1, 180);
-        }  
+        }
         break;
+        
         // repeat cases as required for relevant events
         default:
           ;
@@ -272,7 +332,21 @@ void PrintTurn(float turn)
 
 
 
-
+/*
+ * Cmd list:
+ * 0x0011 - return last front line following reading
+ * 0x0012 - return last back line following reading
+ * 0x0013 - return last back center reading
+ * 0x0014 - return last front left reading
+ * 0x0015 - Flywheel start
+ * 0x0016 - Flywheel stop
+ * 0x0021 - Servo_Arm(Servo 0) 0
+ * 0x0022 - Servo_Arm(Servo 0) 180
+ * 0x0023 - Servo_Indicator (Servo 1) 0
+ * 0x0024 - Servo_Indicator (Servo 1) 180
+ 
+ 
+ */
 
 void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
 {
@@ -287,11 +361,40 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     while (SPI1STATbits.SPIRBF) {
         cmd = (uint16_t)SPI1BUF;
     }
-
-    SPI1BUF = turn_latest_word;
-
-    if (cmd != 0x0002) {
-        cmd_pending = cmd;
-        cmd_pending_valid = true;
+    if (cmd == 0x0011){
+        SPI1BUF = turn_latest_LineFollowing;
+    }else if (cmd == 0x0013){
+        SPI1BUF = turn_latest_BackCenter;
+    }else if (cmd == 0x0014){
+        SPI1BUF = turn_latest_FrontLeft;
+    }else if (cmd == 0x0015){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_FLYWHEEL_ON;
+        PostFollowerService(ThisEvent);
+    }else if (cmd == 0x0016){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_FLYWHEEL_OFF;
+        PostFollowerService(ThisEvent);
+    }else if (cmd == 0x0021){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO0_0;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0022){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO0_180;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0023){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO1_0;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0024){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO1_180;
+        PostFollowerService(ThisEvent);
     }
+
+//    if (cmd != 0x00011) {
+//        cmd_pending = cmd;
+//        cmd_pending_valid = true;
+//    }
 }

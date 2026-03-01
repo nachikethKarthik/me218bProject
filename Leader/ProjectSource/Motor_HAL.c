@@ -1,6 +1,14 @@
 // Motor_HAL.c
 #include "Motor_HAL.h"
 #include "ES_CheckEvents.h"
+
+#include "ES_Configure.h"
+#include "ES_Framework.h"
+#include "ES_Events.h"
+#include "ES_PostList.h"
+#include "ES_ServiceHeaders.h"
+#include "ES_Port.h"
+
 #include <xc.h>
 #include <sys/attribs.h>
 #include <stdint.h>
@@ -24,7 +32,7 @@
 
 #define ENC_A_EDGES_PER_REV   300UL
 
-#define MAX_RPM_CMD         350U
+
 
 #define KP                 2.2f //0.2 - 0.6 range
 #define KI                 0.9f
@@ -61,7 +69,7 @@ typedef struct {
     volatile int32_t  enc_count;   // count for the encoder
     volatile int32_t  enc_delta;   // increasement during one period
     volatile uint8_t  a_prev;
-    volatile uint8_t rpm_filt;
+    volatile float rpm_filt;
     
     volatile bool is_driving_fixed_dis;
     volatile uint32_t start_count;
@@ -70,7 +78,7 @@ typedef struct {
 } MotorState;
 
 static MotorState m[2] = {0};
-
+static volatile bool action_done_sent = false;
 // Enter the count crit, saving the status
 
 
@@ -142,8 +150,8 @@ static void PWM_Init(void)
     OC2CONbits.ON = 1;
     
     
-    m[0].rpm_filt = 0;
-    m[1].rpm_filt = 0;
+    m[0].rpm_filt = 0.0f;
+    m[1].rpm_filt = 0.0f;
     m[0].is_driving_fixed_dis = false;
     m[1].is_driving_fixed_dis = false;
 }
@@ -316,12 +324,26 @@ void __ISR(_CHANGE_NOTICE_VECTOR, IPL6SOFT) CNHandler(void)
         if ((m[0].enc_count - m[0].start_count) >= m[0].drive_count){
             MotorHAL_SetSpeedCmdRPM(0, 0, 0);
             m[0].is_driving_fixed_dis = false;
+            
+            if (!action_done_sent && m[0].is_driving_fixed_dis == false && m[1].is_driving_fixed_dis == false){
+                action_done_sent = true;
+                ES_Event_t ThisEvent;
+                ThisEvent.EventType = ES_ACTION_DONE;
+                PostLeaderService(ThisEvent);
+            }
         }
     }
     if (m[1].is_driving_fixed_dis == true){
         if ((m[1].enc_count - m[1].start_count) >= m[1].drive_count){
             MotorHAL_SetSpeedCmdRPM(1, 0, 0);
             m[1].is_driving_fixed_dis = false;
+            
+            if (!action_done_sent && m[0].is_driving_fixed_dis == false && m[1].is_driving_fixed_dis == false){
+                action_done_sent = true;
+                ES_Event_t ThisEvent;
+                ThisEvent.EventType = ES_ACTION_DONE;
+                PostLeaderService(ThisEvent);
+            }
         }
     }
     
@@ -385,11 +407,11 @@ void __ISR(_TIMER_4_VECTOR, IPL2SOFT) T4Handler(void)
 void MotorHAL_DriveEncoderCount(uint8_t id, uint16_t EncoderCounts){
     if (id > 1) return;
     __builtin_disable_interrupts();
+    action_done_sent = false;
     m[id].start_count = m[id].enc_count;
-    __builtin_enable_interrupts();
-    
-    m[id].is_driving_fixed_dis = true; // Start driving fixed distance mode
     m[id].drive_count = EncoderCounts;
+    m[id].is_driving_fixed_dis = true; 
+    __builtin_enable_interrupts();
 }
 
 

@@ -5,10 +5,35 @@
 
 #define TICS_PER_MS      2500U
 
-#define SERVO_MIN_TICKS  1500U   //
-#define SERVO_MAX_TICKS  6500U   //
+//#define SERVO_MIN_TICKS  1500U
+//#define SERVO_MAX_TICKS  6500U
+
+static uint16_t SERVO_MIN_TICKS[3] = {
+    1500U,
+    1500U,   //1500
+    1600U
+};
+
+static uint16_t SERVO_MAX_TICKS[3] = {
+    4800U,
+    6500U,   //6500
+    5800U
+};
+
+uint16_t SERVO_TARGET[3] = {
+    1500U,
+    1500U,   //1500
+    1600U
+};
+
+static uint16_t SERVO_CURRENT[3] = {
+    1500U,
+    1500U,   //1500
+    1600U
+};
 
 #define PR3_20MS         (uint16_t)(TICS_PER_MS*20U - 1U)  // 20ms
+#define SERVO_STEP_TICKS  7U
 
 static volatile uint16_t servo_pw_ticks[3] = {
     (uint16_t)(TICS_PER_MS * 15U / 10U),
@@ -65,14 +90,12 @@ void Servo_Init(void)
 
 void Servo_SetAngle(uint8_t id, uint8_t angle)
 {
-    if (angle > 180) angle = 180;
-
-    uint16_t pw = (uint16_t)(SERVO_MIN_TICKS +((uint16_t)angle * (uint16_t)(SERVO_MAX_TICKS - SERVO_MIN_TICKS)) / 180UL);
-
-    if (pw < SERVO_MIN_TICKS) pw = SERVO_MIN_TICKS;
-    if (pw > SERVO_MAX_TICKS) pw = SERVO_MAX_TICKS;
-
     if (id < 3) {
+        if (angle > 180) angle = 180;
+
+        uint16_t pw = (uint16_t)(SERVO_MIN_TICKS[id] +((uint16_t)angle * (uint16_t)(SERVO_MAX_TICKS[id] - SERVO_MIN_TICKS[id])) / 180UL);
+        if (pw < SERVO_MIN_TICKS[id]) pw = SERVO_MIN_TICKS[id];
+        if (pw > SERVO_MAX_TICKS[id]) pw = SERVO_MAX_TICKS[id];
         servo_pw_ticks[id] = pw;
     }
 }
@@ -80,11 +103,10 @@ void Servo_SetAngle(uint8_t id, uint8_t angle)
 
 void Servo_SetPalseWidth(uint8_t id, uint16_t pw){
     
-    if (pw < SERVO_MIN_TICKS) pw = SERVO_MIN_TICKS;
-    if (pw > SERVO_MAX_TICKS) pw = SERVO_MAX_TICKS;
-    if (id < 3) {
+    if (id >= 3) return;
+    if (pw < SERVO_MIN_TICKS[id]) pw = SERVO_MIN_TICKS[id];
+    if (pw > SERVO_MAX_TICKS[id]) pw = SERVO_MAX_TICKS[id];
         servo_pw_ticks[id] = pw;
-    }
     
 }
 
@@ -99,3 +121,37 @@ void __ISR(_TIMER_3_VECTOR, IPL2SOFT) T3Handler(void)
     OC4RS = servo_pw_ticks[2];
 }
 
+void Servo_Angle_Step(void)
+{
+    for (int i = 0; i < 3; i++) {
+        uint16_t cur = SERVO_CURRENT[i];
+        uint16_t tgt = SERVO_TARGET[i];
+
+        if (cur < tgt) {
+            uint16_t next = cur + SERVO_STEP_TICKS;
+            if (next > tgt) next = tgt;
+            Servo_SetPalseWidth((uint8_t)i, next);
+            SERVO_CURRENT[i] = next;
+        } 
+        else if (cur > tgt) {
+            uint16_t next = (cur > SERVO_STEP_TICKS) ? (cur - SERVO_STEP_TICKS) : 0;
+            if (next < tgt) next = tgt;
+            Servo_SetPalseWidth((uint8_t)i, next);
+            SERVO_CURRENT[i] = next;
+        }
+    }
+}
+
+void Servo_SetAngle_Step(uint8_t id, uint8_t angle){
+    if (angle > 180) angle = 180;
+    uint16_t pw = (uint16_t)(SERVO_MIN_TICKS[id] +((uint16_t)angle * (uint16_t)(SERVO_MAX_TICKS[id] - SERVO_MIN_TICKS[id])) / 180UL);
+    SERVO_TARGET[id] = pw;
+}
+
+
+void Servo_SyncCurrentToOutput(void)
+{
+    for (int i = 0; i < 3; i++) {
+        SERVO_CURRENT[i] = servo_pw_ticks[i];
+    }
+}

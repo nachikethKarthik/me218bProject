@@ -47,7 +47,7 @@
 // the name of the run function
 #define SERV_0_RUN RunLeaderService
 // How big should this services Queue be?
-#define SERV_0_QUEUE_SIZE 5
+#define SERV_0_QUEUE_SIZE 50
 
 /****************************************************************************/
 // The following sections are used to define the parameters for each of the
@@ -196,7 +196,9 @@ typedef enum
   ES_SHORT_TIMEOUT,         /* signals that a short timer has expired */
   /* User-defined events start here */
   ES_NEW_KEY,               /* signals a new key received from terminal */
-  ES_BEACON_DETECTED
+  ES_BEACON_DETECTED,
+  ES_ACTION_DONE,
+  ES_T_DETECTED
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -246,7 +248,7 @@ typedef enum
 #define TIMER1_RESP_FUNC PostLeaderService
 #define TIMER2_RESP_FUNC PostLeaderService
 #define TIMER3_RESP_FUNC PostLeaderService
-#define TIMER4_RESP_FUNC TIMER_UNUSED
+#define TIMER4_RESP_FUNC PostLeaderService
 #define TIMER5_RESP_FUNC TIMER_UNUSED
 #define TIMER6_RESP_FUNC TIMER_UNUSED
 #define TIMER7_RESP_FUNC TIMER_UNUSED
@@ -270,5 +272,6 @@ typedef enum
 #define SIDEDECITION_TIMER       1
 #define ROTATION_TIMER           2
 #define FORWARD_TIMER            3
+#define IS_ONLINE_TIMER          4
 
 #endif /* ES_CONFIGURE_H */
