@@ -18,6 +18,10 @@
 
 /*----------------------------- Module Defines ----------------------------*/
 
+#define Servo_MS      100
+
+
+
 /*---------------------------- Module Functions ---------------------------*/
 /* prototypes for private functions for this machine.They should be functions
    relevant to the behavior of this state machine
@@ -37,6 +41,8 @@ static volatile uint16_t turn_latest_FrontCenter = 0;
 static volatile uint16_t turn_latest_FrontLeft = 0;
 volatile uint16_t cmd_pending = 0;
 volatile bool cmd_pending_valid = false;
+
+
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
  Function
@@ -68,7 +74,6 @@ bool InitFollowerService(uint8_t Priority)
   IPC7bits.SPI1IP = 4; 
   IPC7bits.SPI1IS = 0;
   
-  Servo_Init();
   Flywheel_Init();
   Flywheel_SetDuty(100);
   
@@ -76,8 +81,14 @@ bool InitFollowerService(uint8_t Priority)
 
   TRISBbits.TRISB9 = 0;
   MyPriority = Priority;
+  
+  // Servo Init
+  Servo_Init();
   Servo_SetAngle(1, 90);
-
+  Servo_SetAngle(0, 20);
+  Servo_SetAngle(2, 0);
+  Servo_SyncCurrentToOutput();
+  
   CurrentState = InitPState;
   // post the initial transition event
   ThisEvent.EventType = ES_INIT;
@@ -181,6 +192,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             }
             if (ThisEvent.EventParam == RETURN_TIMER){
                 ReadIRSensors();
+                Servo_Angle_Step();
                 if (is_T_F()){
                     turn_latest_LineFollowing = 0;
                 }else{
@@ -192,6 +204,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 turn_latest_FrontLeft = LineFollowing_GetFrontLeft();
                 ES_Timer_InitTimer(RETURN_TIMER, 10);
             }
+            
         }
         break;
         case ES_NEW_KEY:
@@ -207,10 +220,10 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //PrintTurn(turn);
             } 
             if (ThisEvent.EventParam == 'l'){
-                Servo_SetAngle(0, 0);
+                Servo_SetAngle_Step(0, 20);
             }
             if (ThisEvent.EventParam == 'r'){
-                Servo_SetAngle(0, 180);
+                Servo_SetAngle_Step(0, 90);
             }
             if (ThisEvent.EventParam == 'f'){
                 Flywheel_SetDuty(1);
@@ -219,6 +232,12 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             if (ThisEvent.EventParam == 's'){
                 Flywheel_SetDuty(100);
                 //DB_printf("Cmd received\n");
+            }
+            if (ThisEvent.EventParam == 'a'){
+                Servo_SetAngle_Step(2, 20);
+            }
+            if (ThisEvent.EventParam == 'c'){
+                Servo_SetAngle_Step(2, 90);
             }
         }
         break;
@@ -243,6 +262,18 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         {
             Servo_SetAngle(0, 180);
         }
+        break;
+        case ES_SERVO1_0:
+        {
+            Servo_SetAngle(1, 0);
+        }
+        break;
+        case ES_SERVO1_180:
+        {
+            Servo_SetAngle(1, 180);
+        }
+        break;
+        
         // repeat cases as required for relevant events
         default:
           ;
@@ -311,6 +342,8 @@ void PrintTurn(float turn)
  * 0x0016 - Flywheel stop
  * 0x0021 - Servo_Arm(Servo 0) 0
  * 0x0022 - Servo_Arm(Servo 0) 180
+ * 0x0023 - Servo_Indicator (Servo 1) 0
+ * 0x0024 - Servo_Indicator (Servo 1) 180
  
  
  */
@@ -349,6 +382,14 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }else if(cmd == 0x0022){
         ES_Event_t ThisEvent;
         ThisEvent.EventType = ES_SERVO0_180;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0023){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO1_0;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0024){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO1_180;
         PostFollowerService(ThisEvent);
     }
 

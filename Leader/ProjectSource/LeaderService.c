@@ -68,7 +68,7 @@ bool InitLeaderService(uint8_t Priority)
   MotorHAL_Init();
   BeaconDetector_Init();
   RGB_Init();
-  
+  RGB_TurnCyan();
   if (ES_PostToService(MyPriority, ThisEvent) == true)
   {
     return true;
@@ -130,24 +130,22 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
       if (ThisEvent.EventType == ES_INIT)    // only respond to ES_Init
       {
 
-          //CurrentState = TestState;
+          CurrentState = TestState;
           
           
-          CurrentState = LineFollowingState_1;
-          DB_printf("Start Line 1\n");
-          MotorHAL_SetSpeedCmdRPM(0, 40, 0);
-          MotorHAL_SetSpeedCmdRPM(1, 40, 0);
-          base_speed = 40;
-          FrontFollowing = true;
-          FrontT = true;
-          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+//          CurrentState = LineFollowingState_1;
+//          DB_printf("Start Line 1\n");
+//          MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+//          MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+//          base_speed = 40;
+//          FrontFollowing = true;
+//          FrontT = true;
+//          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
           
-          
-          //CheckPoint3
 //        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
 //        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-//        CurrentState = CheckPoint3State_1;
-//        BeaconDetector_ArmForTarget(BEACON_R);
+//        CurrentState = Field_Determine_State_1;
+//        BeaconDetector_Arm();
         
         
       }
@@ -288,12 +286,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     break;
                     case 'q':
                     {
-                        SPI1Leader_SendCmd16(0x0016);
+                        SPI1Leader_SendCmd16(0x0023);
                     }
                     break;
                     case 'z':
                     {
-                        RGB_TurnCyan();
+                        SPI1Leader_SendCmd16(0x0024);
                     }
                     break;
                     case 'm':
@@ -332,6 +330,69 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         }  // end switch on CurrentEvent
     }
     break;
+    
+    case Field_Determine_State_1:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_BEACON_DETECTED:
+            {
+                if (ThisEvent.EventParam >= 818 && ThisEvent.EventParam <= 1000){ // R detected
+                    //SPI1Leader_SendCmd16(0x0023);
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0023);
+                    RGB_TurnBlue();
+                    
+                    MotorHAL_DriveEncoderCount(0, 220);
+                    MotorHAL_DriveEncoderCount(1, 220);
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+                }else if (ThisEvent.EventParam >= 1800 && ThisEvent.EventParam <= 2200){
+                    //SPI1Leader_SendCmd16(0x0024);
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0024);
+                    RGB_TurnGreen();
+                    
+                    MotorHAL_DriveEncoderCount(0, 220);
+                    MotorHAL_DriveEncoderCount(1, 220);
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+                }else{
+                    BeaconDetector_Arm();
+                }
+            }
+            break;
+            
+            case ES_ACTION_DONE:
+            {
+                CurrentState = Field_Determine_State_2;
+                MotorHAL_DriveEncoderCount(0, 50);
+                MotorHAL_DriveEncoderCount(1, 50);
+                MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+            }
+            break;
+        }
+    }
+    break;
+    
+    case Field_Determine_State_2:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                CurrentState = LineFollowingState_1;
+                ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+                base_speed = 40;
+                FrontFollowing = true;
+                FrontT = true;
+            }
+            break;
+        }
+    }
+    break;
+    
     
     
     case LineFollowingState_1:
