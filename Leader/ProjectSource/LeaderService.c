@@ -144,12 +144,21 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
 //          FrontT = true;
 //          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
           
+//        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+//        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+//        CurrentState = Field_Determine_State_1;
+//        BeaconDetector_Arm();
+        
+        
+        MotorHAL_DriveEncoderCount(0, 100);
+        MotorHAL_DriveEncoderCount(1, 100);
         MotorHAL_SetSpeedCmdRPM(0, 20, 1);
-        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-        CurrentState = Field_Determine_State_1;
-        BeaconDetector_Arm();
-        
-        
+        MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+        base_speed = 20;
+        CurrentState = Seesaw1_State_1;
+        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+          
+          
       }
     }
     break;
@@ -664,11 +673,11 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
             {
-                MotorHAL_SetSpeedCmdRPM(0, 40, 1);
-                MotorHAL_SetSpeedCmdRPM(1, 40, 1);
+                MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+                MotorHAL_SetSpeedCmdRPM(1, 20, 1);
                 uint16_t A = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
-                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
-                base_speed = 40;
+                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
+                base_speed = 20;
             }
             break;
             
@@ -681,8 +690,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                         MotorHAL_DriveEncoderCount(0, 60);
                         MotorHAL_DriveEncoderCount(1, 60);
                     }else{
-                        MotorHAL_SetSpeedCmdRPM(0, base_speed + R + 100UL, 0);
-                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R - 100UL, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed + R - 100UL, 1);
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed - R + 100UL, 1);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }
                 }
@@ -699,7 +708,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
             {
-                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
+                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
                 ES_Timer_InitTimer(TRAPDOOR_TIMER, 3000);
             }
             break;

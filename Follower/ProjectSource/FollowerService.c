@@ -292,7 +292,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         break;
         case ES_SERVO2_Rise:
         {
-            Servo_SetAngle_Step(2, 90);
+            Servo_SetAngle_Step(2, 0);
         }
         break;
         // repeat cases as required for relevant events
