@@ -39,6 +39,7 @@ static bool FrontT = false;
 static bool is_Forward_Timer_on = true;
 
 static uint8_t suck_count;
+
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
  Function
@@ -65,6 +66,10 @@ bool InitLeaderService(uint8_t Priority)
   MyPriority = Priority;
   CurrentState = InitPState;
   ThisEvent.EventType = ES_INIT;
+  
+  //Start Switch
+  TRISBbits.TRISB10 = 1;
+  
   
   SPI1Leader_Init();
   MotorHAL_Init();
@@ -129,37 +134,71 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
   {
     case InitPState:        // If current state is initial Psedudo State
     {
-      if (ThisEvent.EventType == ES_INIT)    // only respond to ES_Init
-      {
+        switch (ThisEvent.EventType)
+        {
+            case ES_INIT:    // only respond to ES_Init
+            {
+                CurrentState = TestState;
+                DB_printf("Start!\n");
 
-          //CurrentState = TestState;
-          
-          
-//          CurrentState = LineFollowingState_1;
-//          DB_printf("Start Line 1\n");
-//          MotorHAL_SetSpeedCmdRPM(0, 40, 0);
-//          MotorHAL_SetSpeedCmdRPM(1, 40, 0);
-//          base_speed = 40;
-//          FrontFollowing = true;
-//          FrontT = true;
-//          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
-          
-//        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
-//        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-//        CurrentState = Field_Determine_State_1;
-//        BeaconDetector_Arm();
-        
-        
-        MotorHAL_DriveEncoderCount(0, 100);
-        MotorHAL_DriveEncoderCount(1, 100);
-        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
-        MotorHAL_SetSpeedCmdRPM(1, 20, 1);
-        base_speed = 20;
-        CurrentState = Seesaw1_State_1;
-        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
-          
-          
-      }
+      //          CurrentState = LineFollowingState_1;
+      //          DB_printf("Start Line 1\n");
+      //          MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+      //          MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+      //          base_speed = 40;
+      //          FrontFollowing = true;
+      //          FrontT = true;
+      //          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+
+      //        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+      //        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+      //        CurrentState = Field_Determine_State_1;
+      //        BeaconDetector_Arm();
+
+
+//              MotorHAL_DriveEncoderCount(0, 100);
+//              MotorHAL_DriveEncoderCount(1, 100);
+//              MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+//              MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+//              base_speed = 20;
+//              CurrentState = Seesaw1_State_1;
+//              ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+            }
+            break;
+            
+            case ES_GAME_START:    // only respond to ES_Init
+            {
+
+                CurrentState = TestState;
+
+
+      //          CurrentState = LineFollowingState_1;
+      //          DB_printf("Start Line 1\n");
+      //          MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+      //          MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+      //          base_speed = 40;
+      //          FrontFollowing = true;
+      //          FrontT = true;
+      //          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+
+      //        MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+      //        MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+      //        CurrentState = Field_Determine_State_1;
+      //        BeaconDetector_Arm();
+
+
+//              MotorHAL_DriveEncoderCount(0, 100);
+//              MotorHAL_DriveEncoderCount(1, 100);
+//              MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+//              MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+//              base_speed = 20;
+//              CurrentState = Seesaw1_State_1;
+//              ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+
+
+            }
+            break;
+        }
     }
     break;
 

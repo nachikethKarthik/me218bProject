@@ -198,6 +198,7 @@ typedef enum
   ES_NEW_KEY,               /* signals a new key received from terminal */
   ES_BEACON_DETECTED,
   ES_ACTION_DONE,
+  ES_GAME_START,
   ES_T_DETECTED
 }ES_EventType_t;
 
@@ -233,7 +234,7 @@ typedef enum
 
 /****************************************************************************/
 // This is the list of event checking functions
-#define EVENT_CHECK_LIST Check4Keystroke//, Check4Beacon
+#define EVENT_CHECK_LIST Check4Keystroke, Check4StartSwitch//, Check4Beacon
 
 //EvCheckerTest
 

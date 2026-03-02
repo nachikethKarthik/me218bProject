@@ -53,6 +53,8 @@ static uint8_t LastRA2State = 0; // For beacon detection
 static uint32_t EdgeCount = 0; // Count of edges seen
 static bool BeaconArmed = false;
 
+static bool GameStart = false;
+
 /****************************************************************************
  Function
    Check4Keystroke
@@ -94,6 +96,15 @@ bool EvCheckerTest(void) {
     return ReturnVal;
 }
 
+bool Check4StartSwitch(void){
+    if(!GameStart){
+        if(PORTBbits.RB10 == 1){
+            ES_Event_t ThisEvent;
+            ThisEvent.EventType = ES_GAME_START;
+            ES_PostAll(ThisEvent);
+        }
+    }
+}
 /****************************************************************************
  Function
    Check4Beacon

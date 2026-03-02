@@ -24,5 +24,6 @@ typedef bool CheckFunc (void);
 typedef CheckFunc (*pCheckFunc);
 
 bool ES_CheckUserEvents(void);
-
+bool Check4StartSwitch(void);
+ 
 #endif  // ES_CheckEvents_H
