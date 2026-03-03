@@ -20,6 +20,11 @@
 
 #define Servo_MS      100
 
+#define SERVO_0_IDEL    15
+#define SERVO_0_RISE    110
+#define SERVO_2_IDEL    180
+#define SERVO_2_MID     80
+#define SERVO_2_RISE    0
 
 
 /*---------------------------- Module Functions ---------------------------*/
@@ -232,10 +237,10 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //PrintTurn(turn);
             } 
             if (ThisEvent.EventParam == 'l'){
-                Servo_SetAngle_Step(0, 20);
+                Servo_SetAngle_Step(0, 15);
             }
             if (ThisEvent.EventParam == 'r'){
-                Servo_SetAngle_Step(0, 90);
+                Servo_SetAngle_Step(0, 110);
             }
             if (ThisEvent.EventParam == 'f'){
                 Flywheel_SetDuty(1);
@@ -246,10 +251,15 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //DB_printf("Cmd received\n");
             }
             if (ThisEvent.EventParam == 'a'){
-                Servo_SetAngle_Step(2, 20);
+                Servo_SetAngle_Step(2, 180);
             }
             if (ThisEvent.EventParam == 'c'){
-                Servo_SetAngle_Step(2, 90);
+                //Servo_SetAngle_Step(2, 0);
+                Servo_SetAngle_Step(0, 110);
+                Servo_SetAngle_Step(2, 80);
+            }
+            if (ThisEvent.EventParam == 'd'){
+                Servo_SetAngle_Step(2, 0);
             }
         }
         break;
@@ -267,12 +277,12 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         break;
         case ES_SERVO0_Idel:
         {
-            Servo_SetAngle_Step(0, 20);
+            Servo_SetAngle_Step(0, SERVO_0_IDEL);
         }
         break;
         case ES_SERVO0_Rise:
         {
-            Servo_SetAngle_Step(0, 90);
+            Servo_SetAngle_Step(0, SERVO_0_RISE);
         }
         break;
         case ES_SERVO1_Idel:
@@ -287,14 +297,18 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         break;
         case ES_SERVO2_Idel:
         {
-            Servo_SetAngle_Step(2, 180);
+            Servo_SetAngle_Step(2, SERVO_2_IDEL);
         }
         break;
         case ES_SERVO2_Rise:
         {
-            Servo_SetAngle_Step(2, 0);
+            Servo_SetAngle_Step(2, SERVO_2_RISE);
         }
         break;
+        case ES_SERVO2_Mid:
+        {
+            Servo_SetAngle_Step(2, SERVO_2_MID);
+        }
         // repeat cases as required for relevant events
         default:
           ;
@@ -367,7 +381,8 @@ void PrintTurn(float turn)
  * 0x0024 - Servo_Indicator (Servo 1) rise
  * 0x0025 - Servo_Trapdoor(Servo 2) idel
  * 0x0026 - Servo_Trapdoor(Servo 2) rise
- 
+ * 0x0027 - Servo_Trapdoor(Servo 2) mid
+ * 
  */
 
 void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
@@ -422,6 +437,10 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }else if(cmd == 0x0026){
         ES_Event_t ThisEvent;
         ThisEvent.EventType = ES_SERVO2_Rise;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0027){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_SERVO2_Mid;
         PostFollowerService(ThisEvent);
     }
 

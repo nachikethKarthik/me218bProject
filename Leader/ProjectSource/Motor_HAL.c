@@ -43,10 +43,10 @@
 #define INT_MAX             100.0f
 
 //Pin mapping for encoder
-#define ENC1A_TRIS          TRISBbits.TRISB8
-#define ENC2A_TRIS          TRISBbits.TRISB9
-#define ENC1A_PORT          PORTBbits.RB8
-#define ENC2A_PORT          PORTBbits.RB9
+#define ENC1A_TRIS          TRISBbits.TRISB9
+#define ENC2A_TRIS          TRISBbits.TRISB8
+#define ENC1A_PORT          PORTBbits.RB9
+#define ENC2A_PORT          PORTBbits.RB8
 
 //Pin mapping for motor direction
 #define M1_DIR_TRIS         TRISAbits.TRISA4

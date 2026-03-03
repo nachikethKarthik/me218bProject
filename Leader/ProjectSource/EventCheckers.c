@@ -99,11 +99,14 @@ bool EvCheckerTest(void) {
 bool Check4StartSwitch(void){
     if(!GameStart){
         if(PORTBbits.RB10 == 1){
+            GameStart = true;
             ES_Event_t ThisEvent;
             ThisEvent.EventType = ES_GAME_START;
             ES_PostAll(ThisEvent);
+            return true;
         }
     }
+    return false;
 }
 /****************************************************************************
  Function
