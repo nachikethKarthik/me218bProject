@@ -26,8 +26,9 @@ typedef enum
     Seesaw1_State_1,
     Seesaw1_State_2,
     Seesaw1_State_3,
-    CheckPoint3State_1, 
-    CheckPoint3State_2
+    Seesaw2_State_1,
+    Seesaw2_State_2
+     
 }LeaderState_t;
 
 // Public Function Prototypes

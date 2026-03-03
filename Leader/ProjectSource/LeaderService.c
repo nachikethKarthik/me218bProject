@@ -144,8 +144,10 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_GAME_START:    // only respond to ES_Init
             {
 
-                CurrentState = TestState;
-                DB_printf("Game Start!\n");
+                
+                //CurrentState = TestState;
+                //SPI1Leader_SendCmd16(0x0015);
+//                DB_printf("Game Start!\n");
 
       //          CurrentState = LineFollowingState_1;
       //          DB_printf("Start Line 1\n");
@@ -156,10 +158,10 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
       //          FrontT = true;
       //          ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
 
-//              MotorHAL_SetSpeedCmdRPM(0, 20, 0);
-//              MotorHAL_SetSpeedCmdRPM(1, 20, 1);
-//              CurrentState = Field_Determine_State_1;
-//              BeaconDetector_Arm();
+              MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+              MotorHAL_SetSpeedCmdRPM(1, 20, 1);
+              CurrentState = Field_Determine_State_1;
+              BeaconDetector_Arm();
 
 
 //              MotorHAL_DriveEncoderCount(0, 100);
@@ -694,10 +696,13 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_ACTION_DONE:
             {
                 // Drive toward T, and rise the arm
+                
                 MotorHAL_SetSpeedCmdRPM(1, 20, 1);
                 MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+                
                 uint16_t A = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
                 uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0027);
+                uint16_t C = (uint16_t)SPI1Leader_RequestResponse16(0x0016);
                 base_speed = 20;
             }
             break;
@@ -708,8 +713,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0012);
                     if ((R == 0)){
                         CurrentState = Seesaw1_State_2;
-                        MotorHAL_DriveEncoderCount(0, 60);
-                        MotorHAL_DriveEncoderCount(1, 60);
+                        MotorHAL_DriveEncoderCount(0, 110);
+                        MotorHAL_DriveEncoderCount(1, 110);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 1);
                         MotorHAL_SetSpeedCmdRPM(0, base_speed - R + 100UL, 1);
@@ -731,7 +736,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             {
                 // Drop the coal into bucket
                 uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
-                ES_Timer_InitTimer(TRAPDOOR_TIMER, 2000);
+                //ES_Timer_InitTimer(TRAPDOOR_TIMER, 2000);
             }
             break;
             
@@ -750,7 +755,22 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     {
         
     }
-
+    break;
+    case Seesaw2_State_1:
+    {
+        
+    }
+    break;
+    case Seesaw2_State_2:
+    {
+        
+    }
+    break;
+    
+    
+    
+    
+    
     // repeat state pattern as required for other states
     default:
       ;

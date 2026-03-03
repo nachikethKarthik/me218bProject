@@ -21,7 +21,7 @@
 #define Servo_MS      100
 
 #define SERVO_0_IDEL    15
-#define SERVO_0_RISE    110
+#define SERVO_0_RISE    105
 #define SERVO_2_IDEL    180
 #define SERVO_2_MID     80
 #define SERVO_2_RISE    0
@@ -91,10 +91,10 @@ bool InitFollowerService(uint8_t Priority)
   // Servo Init
   Servo_Init();
   Servo_SetAngle(1, 90);
-  Servo_SetAngle(0, 20);
+  Servo_SetAngle(0, 15);
   Servo_SetAngle(2, 180);
   Servo_SetAngle_Step(1, 90);
-  Servo_SetAngle_Step(0, 20);
+  Servo_SetAngle_Step(0, 15);
   Servo_SetAngle_Step(2, 180);
   Servo_SyncCurrentToOutput();
   
@@ -255,7 +255,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
             }
             if (ThisEvent.EventParam == 'c'){
                 //Servo_SetAngle_Step(2, 0);
-                Servo_SetAngle_Step(0, 110);
+                Servo_SetAngle_Step(0, 105);
                 Servo_SetAngle_Step(2, 80);
             }
             if (ThisEvent.EventParam == 'd'){

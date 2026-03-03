@@ -11,7 +11,7 @@
 static uint16_t SERVO_MIN_TICKS[3] = {
     1500U,
     1500U,   //1500
-    1600U
+    1400U
 };
 
 static uint16_t SERVO_MAX_TICKS[3] = {
