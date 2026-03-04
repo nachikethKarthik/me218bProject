@@ -429,7 +429,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     }
     break;
     
-    case Field_Determine_State_2:
+    case Field_Determine_State_2: // MAKING CHANGES HERE
     {
         switch (ThisEvent.EventType)
         {
@@ -438,9 +438,9 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 // Start linefollowing and drive forward
                 CurrentState = LineFollowingState_1;
                 ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
-                MotorHAL_SetSpeedCmdRPM(0, 50, 0); // used to be 40
-                MotorHAL_SetSpeedCmdRPM(1, 50, 0);
-                base_speed = 50; // used to be 40
+                MotorHAL_SetSpeedCmdRPM(0, 90, 0); // used to be 40
+                MotorHAL_SetSpeedCmdRPM(1, 90, 0);
+                base_speed = 90; // used to be 40
                 FrontFollowing = true;
                 FrontT = true;
             }
@@ -1251,7 +1251,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     // Line following until middle T
                     uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0012); 
                     if ((R == 0)){
-                        //ES_Timer_StopTimer(LINEFOLLOWING_TIMER);
+                        ES_Timer_StopTimer(LINEFOLLOWING_TIMER);
+                        DB_printf("[S3] line detected, stopping timer, go S4\n");
                         CurrentState = Seesaw3_State_4;
                         MotorHAL_SetSpeedCmdRPM(0, 30, 1); // used to be 20
                         MotorHAL_SetSpeedCmdRPM(1, 30, 1);
@@ -1272,6 +1273,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
             {
+                DB_printf("[S4] short forward done, start 90-turn\n");
                 MotorHAL_SetSpeedCmdRPM(1, 30, 0);
                 MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                 MotorHAL_DriveEncoderCount(0, 255);
@@ -1304,10 +1306,13 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){                
                     uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0012);
                     if ((R == 0)){
+                        ES_Timer_StopTimer(LINEFOLLOWING_TIMER);
                         CurrentState = Seesaw3_State_6;
                         MotorHAL_DriveEncoderCount(0, 110);
                         MotorHAL_DriveEncoderCount(1, 110);
                     }else if(R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 1);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 1);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 1);
