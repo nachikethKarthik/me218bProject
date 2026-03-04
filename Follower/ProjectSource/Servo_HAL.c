@@ -4,7 +4,8 @@
 #include <stdint.h>
 
 #define TICS_PER_MS      2500U
-
+#define PR3_20MS         (uint16_t)(TICS_PER_MS*20U - 1U)  // 20ms
+#define SERVO_STEP_TICKS  10U
 //#define SERVO_MIN_TICKS  1500U
 //#define SERVO_MAX_TICKS  6500U
 
@@ -31,9 +32,6 @@ static uint16_t SERVO_CURRENT[3] = {
     1500U,   //1500
     1600U
 };
-
-#define PR3_20MS         (uint16_t)(TICS_PER_MS*20U - 1U)  // 20ms
-#define SERVO_STEP_TICKS  7U
 
 static volatile uint16_t servo_pw_ticks[3] = {
     (uint16_t)(TICS_PER_MS * 15U / 10U),
