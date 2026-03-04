@@ -147,7 +147,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             {
 
                 
-              // CurrentState = TestState;
+//              CurrentState = TestState;
+//              MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+//              MotorHAL_SetSpeedCmdRPM(1, 40, 0);
+//              MotorHAL_DriveEncoderCount(0, 400);
+//              MotorHAL_DriveEncoderCount(1, 400);
+              
 //                SPI1Leader_SendCmd16(0x0015);
 //                DB_printf("Game Start!\n");
 
@@ -582,7 +587,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 MotorHAL_SetSpeedCmdRPM(0, 30, 0);
                 base_speed = 30;
                 CurrentState = LineFollowingState_5;
-                ES_Timer_InitTimer(SUCK_TIMER, 7000);
+                ES_Timer_InitTimer(SUCK_TIMER, 6500);
             }
             break;
             case ES_TIMEOUT:
@@ -693,6 +698,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     }else if (seesaw_num == 2){
                         CurrentState = Seesaw2_State_1;
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                    }else if (seesaw_num == 3){
+                        CurrentState = Seesaw3_State_2;
+                        MotorHAL_DriveEncoderCount(0, 300);
+                        MotorHAL_DriveEncoderCount(1, 300); 
+                        MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                        MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                     }
                     
                 }
@@ -795,7 +806,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     MotorHAL_SetSpeedCmdRPM(0, 30, 0);
                     
                     SPI1Leader_SendCmd16(0x0015);  //Turn on Flywheel
-                    ES_Timer_InitTimer(SUCK_TIMER, 8000);
+                    ES_Timer_InitTimer(SUCK_TIMER, 7500);
                     //Return the bucket
                     uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
                     uint16_t D = (uint16_t)SPI1Leader_RequestResponse16(0x0021);
@@ -924,7 +935,68 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
                 {
+                    // Deposit the balls into seesaw 2
                     uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
+                    ES_Timer_InitTimer(TRAPDOOR_TIMER, 5000);
+                }
+            break;
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == TRAPDOOR_TIMER){
+                    uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+                    MotorHAL_DriveEncoderCount(0, 400);
+                    MotorHAL_DriveEncoderCount(1, 400);
+                    
+                    CurrentState = Seesaw2_State_4;
+                }
+            }
+            break;
+        }
+    }
+    break;
+    
+    case Seesaw2_State_4:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+                {
+                    // Drive forward a fixed amount (away from seesaw 2, back to the black line). Forward = flywheel side
+                    MotorHAL_SetSpeedCmdRPM(0, 20, 1);
+                    MotorHAL_SetSpeedCmdRPM(1, 20, 0);
+                    MotorHAL_DriveEncoderCount(0, 160);
+                    MotorHAL_DriveEncoderCount(1, 160);
+                    CurrentState = Seesaw2_State_5;
+                }
+                break;
+        }
+    }
+    break;
+    
+    case Seesaw2_State_5:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+                {
+                    //Drive back to the dispenser
+                    MotorHAL_DriveEncoderCount(0, 600); //550
+                    MotorHAL_DriveEncoderCount(1, 600);
+                    MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                    MotorHAL_SetSpeedCmdRPM(0, 30, 0);
+                    
+                    //Turn on Flywheel
+                    SPI1Leader_SendCmd16(0x0015);  
+                    ES_Timer_InitTimer(SUCK_TIMER, 8000);
+                    
+                    //Return the bucket to lowered position
+                    uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
+                    uint16_t D = (uint16_t)SPI1Leader_RequestResponse16(0x0021);
+                   
+                    CurrentState = Seesaw3_State_1;
+                    ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                 }
                 break;
         }
@@ -932,6 +1004,148 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     break;
     
     
+    case Seesaw3_State_1:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                //Drive backward to finish first suck for seesaw 3
+                MotorHAL_DriveEncoderCount(0, 100);
+                MotorHAL_DriveEncoderCount(1, 100);
+                MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                CurrentState = LineFollowingState_6;
+                seesaw_num = 3;
+                suck_count = 2;     
+            }
+            break;
+            case ES_TIMEOUT:
+            {
+                if(ThisEvent.EventParam == SUCK_TIMER){
+                    //Drive backward to finish first suck
+                    MotorHAL_DriveEncoderCount(0, 100);
+                    MotorHAL_DriveEncoderCount(1, 100);
+                    MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                    MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                    CurrentState = LineFollowingState_6;
+                    seesaw_num = 3;
+                    suck_count = 2;
+                }
+                // Line following to the dispenser
+                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
+                    
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0011);
+                    if ((R == 0)){
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                    }else{
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed - R + 100UL, 0);
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                    }
+                }
+            }
+            break;
+        }
+    }
+    break;
+    
+    case Seesaw3_State_2:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                // Rotate 90 degrees
+                MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 0);
+                MotorHAL_DriveEncoderCount(0, 245); //255 before
+                MotorHAL_DriveEncoderCount(1, 245);
+                CurrentState = Seesaw3_State_3;
+            }
+            break;
+        }
+    }
+    break;
+    
+    case Seesaw3_State_3:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                
+                //Rise the arm and stop the flywheel
+                uint16_t A = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
+                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0027);
+                uint16_t C = (uint16_t)SPI1Leader_RequestResponse16(0x0016);
+                
+                ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+            }
+            break;
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
+                    // Line following until middle T
+                    uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0012); 
+                    if ((R == 0)){
+                        CurrentState = Seesaw3_State_4;
+                        MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                        MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                        MotorHAL_DriveEncoderCount(0, 40);
+                        MotorHAL_DriveEncoderCount(1, 40);
+                    }else{
+                        ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+                    }
+                }
+            }
+            break;
+        }
+    }
+    break;
+    case Seesaw3_State_4:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+            {
+                MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                MotorHAL_DriveEncoderCount(0, 255);
+                MotorHAL_DriveEncoderCount(1, 255);
+                CurrentState = Seesaw3_State_5;
+                
+            }
+            break;
+        }
+    }
+    break;
+    
+    case Seesaw3_State_5:
+    {
+        switch (ThisEvent.EventType)
+        {
+            case ES_ACTION_DONE:
+                {
+                    uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
+                    ES_Timer_InitTimer(TRAPDOOR_TIMER, 5000);
+                }
+                break;
+            case ES_TIMEOUT:
+            {
+                if (ThisEvent.EventParam == TRAPDOOR_TIMER){
+                    uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
+
+                    
+                    CurrentState = Seesaw3_State_6;
+                }
+            }
+            break;
+        }
+    }
+    break;
     
     
     // repeat state pattern as required for other states

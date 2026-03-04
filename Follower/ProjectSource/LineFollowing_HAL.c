@@ -8,8 +8,8 @@
 
 #define CHANNEL_SET  ((1u<<0)|(1u<<1)|(1u<<4)|(1u<<5)|(1u<<11)|(1u<<12))
 
-#define KP        45.0f //40
-#define KD        5.0f //10
+#define KP        40.0f //40
+#define KD        10.0f //10
 
 static uint32_t ADCResults[8];
 
@@ -21,7 +21,7 @@ static uint32_t BackLeft    = 0;
 static uint32_t BackCenter  = 0;
 static uint32_t BackRight   = 0;
 
-static uint32_t TH = 850;
+static uint32_t TH = 849;
 
 
 // PD state (use float)
