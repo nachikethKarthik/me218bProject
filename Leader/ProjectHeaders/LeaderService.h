@@ -36,7 +36,9 @@ typedef enum
     Seesaw3_State_3,
     Seesaw3_State_4,
     Seesaw3_State_5,
-    Seesaw3_State_6
+    Seesaw3_State_6,
+    Seesaw1_State_2_1,
+    Seesaw1_State_2_2
      
 }LeaderState_t;
 

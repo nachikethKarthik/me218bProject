@@ -276,7 +276,8 @@ typedef enum
   ES_SERVO1_Rise,
   ES_SERVO2_Idel,
   ES_SERVO2_Rise,
-  ES_SERVO2_Mid
+  ES_SERVO2_Mid,
+  ES_FLYWHEEL_COUNTER
   
 }ES_EventType_t;
 

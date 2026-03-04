@@ -255,7 +255,7 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //DB_printf("Cmd received\n");
             }
             if (ThisEvent.EventParam == 'a'){
-                Servo_SetAngle_Step(2, 180);
+                Flywheel_SetDuty_Counter(95);
             }
             if (ThisEvent.EventParam == 'c'){
                 //Servo_SetAngle_Step(2, 0);
@@ -313,7 +313,13 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         {
             Servo_SetAngle_Step(2, SERVO_2_MID);
         }
+        break;
+        case ES_FLYWHEEL_COUNTER:
+        {
+            Flywheel_SetDuty_Counter(95);
+        }
         // repeat cases as required for relevant events
+        
         default:
           ;
       }  // end switch on CurrentEvent
@@ -386,7 +392,7 @@ void PrintTurn(float turn)
  * 0x0025 - Servo_Trapdoor(Servo 2) idle
  * 0x0026 - Servo_Trapdoor(Servo 2) rise
  * 0x0027 - Servo_Trapdoor(Servo 2) mid
- * 
+ * 0x0028 - Flywheel counter
  */
 
 void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
@@ -445,6 +451,10 @@ void __ISR(_SPI1_VECTOR, IPL4SOFT) SPI1RxHandler(void)
     }else if(cmd == 0x0027){
         ES_Event_t ThisEvent;
         ThisEvent.EventType = ES_SERVO2_Mid;
+        PostFollowerService(ThisEvent);
+    }else if(cmd == 0x0028){
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType = ES_FLYWHEEL_COUNTER;
         PostFollowerService(ThisEvent);
     }
 

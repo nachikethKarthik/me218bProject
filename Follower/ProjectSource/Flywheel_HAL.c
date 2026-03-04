@@ -23,6 +23,8 @@ static uint16_t s_pr2 = 0;
 void Flywheel_Init(void)
 {
     // Timer2 for PWM
+    TRISBbits.TRISB8 = 0;
+    
     T2CONbits.ON = 0;
     T2CONbits.TCS = 0;
     TMR2 = 0;
@@ -43,9 +45,17 @@ void Flywheel_Init(void)
 
 void Flywheel_SetDuty(uint8_t duty_percent)
 {
+    LATBbits.LATB8 = 1;
     if (duty_percent > 100) duty_percent = 100;
 
     uint16_t duty_counts = (uint16_t)(((uint32_t)duty_percent * (uint32_t)(s_pr2 + 1U)) / 100UL);
 
+    OC3RS = duty_counts;
+}
+void Flywheel_SetDuty_Counter(uint8_t duty_percent)
+{
+    LATBbits.LATB8 = 0;
+    if (duty_percent > 100) duty_percent = 100;
+    uint16_t duty_counts = (uint16_t)(((uint32_t)duty_percent * (uint32_t)(s_pr2 + 1U)) / 100UL);
     OC3RS = duty_counts;
 }
