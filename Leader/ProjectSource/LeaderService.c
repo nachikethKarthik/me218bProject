@@ -444,7 +444,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 CurrentState = LineFollowingState_1;
                 ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                 base_speed = BASE_SPEED_TO_DISPENSER; // used to be 40
-                MotorHAL_SetSpeedCmdRPM(0, 90, 0); // used to be 40
+                MotorHAL_SetSpeedCmdRPM(0, BASE_SPEED_TO_DISPENSER, 0); // used to be 40
+                MotorHAL_SetSpeedCmdRPM(1, BASE_SPEED_TO_DISPENSER, 0); // used to be 40
 
                 FrontFollowing = true;
                 FrontT = true;
@@ -474,6 +475,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                         MotorHAL_DriveEncoderCount(0, 40);
                         MotorHAL_DriveEncoderCount(1, 40);
                     }else if (R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else if (FrontFollowing){
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
@@ -515,6 +518,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     if ((R == 0)){
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else if (R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
@@ -529,8 +534,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 // After rotate 90, drive forward to the T before the bucket
                 
                 DB_printf("finish rotate 90, start forward\n");
-                MotorHAL_SetSpeedCmdRPM(1, 40, 0);
-                MotorHAL_SetSpeedCmdRPM(0, 40, 0);
+                MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                 //MotorHAL_DriveEncoderCount(0, 400);
                 //MotorHAL_DriveEncoderCount(1, 400);
                 CurrentState = LineFollowingState_3;
@@ -564,7 +569,12 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                         NewEvent.EventType = ES_T_DETECTED;
                         ES_PostAll(NewEvent);
                     }else if (R == 1){
+                        //branch detected
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+
+                        
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
                         MotorHAL_SetSpeedCmdRPM(0, base_speed - R + 100UL, 0);
@@ -627,6 +637,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     if ((R == 0)){
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else if (R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
@@ -663,6 +675,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     if ((R == 0)){
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else if (R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
@@ -826,6 +840,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                         MotorHAL_DriveEncoderCount(0, 110);
                         MotorHAL_DriveEncoderCount(1, 110);
                     }else if(R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 1);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 1);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 1);
@@ -1125,8 +1141,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 if(ThisEvent.EventParam == FLYWHEEL_TIMER){
                     MotorHAL_DriveEncoderCount(0, 255); //550
                     MotorHAL_DriveEncoderCount(1, 255);
-                    MotorHAL_SetSpeedCmdRPM(1, 30, 1);
-                    MotorHAL_SetSpeedCmdRPM(0, 30, 0);
+                    MotorHAL_SetSpeedCmdRPM(1, ROTATE_L_R_RPM, 1);
+                    MotorHAL_SetSpeedCmdRPM(0, ROTATE_L_R_RPM, 0);
                     //CurrentState = Seesaw2_State_5;
                     CurrentState = Stop_State;
                 }
@@ -1135,7 +1151,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_ACTION_DONE:
             {
                 uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0028);
-                ES_Timer_InitTimer(FLYWHEEL_TIMER, 3000);
+                ES_Timer_InitTimer(FLYWHEEL_TIMER, 2000);
             }
             break;
         }
@@ -1208,6 +1224,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     if ((R == 0)){
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else if (R == 1){
+                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 0);
+                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 0);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 0);
