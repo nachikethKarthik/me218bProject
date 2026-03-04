@@ -206,6 +206,8 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 Servo_Angle_Step();
                 if (is_T_F()){
                     turn_latest_LineFollowing = 0;
+                }else if (is_branch_F()){
+                    turn_latest_LineFollowing = 1;
                 }else{
                     float turn_F = LineFollowing_ComputeFrontTurn();
                     turn_latest_LineFollowing = (uint16_t)(turn_F + 100.0f);

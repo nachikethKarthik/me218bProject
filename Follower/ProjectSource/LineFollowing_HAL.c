@@ -8,8 +8,8 @@
 
 #define CHANNEL_SET  ((1u<<0)|(1u<<1)|(1u<<4)|(1u<<5)|(1u<<11)|(1u<<12))
 
-#define KP        40.0f //40
-#define KD        10.0f //10
+#define KP        45.0f //40
+#define KD        5.0f //10
 
 static uint32_t ADCResults[8];
 
@@ -117,7 +117,7 @@ bool is_branch_F(void)
     bool FC = (FrontCenter > TH);
     bool FR = (FrontRight > TH);
     
-    if (FC && (FL || FR)){
+    if ((FC && FL && !FR) || (FC && FR && !FL) ){
         return true;
     }
     return false;
@@ -129,7 +129,7 @@ bool is_branch_B(void)
     bool BC = (BackCenter > TH);
     bool BR = (BackRight > TH);
     
-    if (BC && (BL || BR)){
+    if ((BC && BL && !BR) || (BC && BR && !BL) ){
         return true;
     }
     return false;
