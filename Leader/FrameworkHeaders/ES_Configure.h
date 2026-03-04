@@ -199,7 +199,8 @@ typedef enum
   ES_BEACON_DETECTED,
   ES_ACTION_DONE,
   ES_GAME_START,
-  ES_T_DETECTED
+  ES_T_DETECTED,
+  ES_GAME_END
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -254,7 +255,7 @@ typedef enum
 #define TIMER6_RESP_FUNC PostLeaderService
 #define TIMER7_RESP_FUNC PostLeaderService
 #define TIMER8_RESP_FUNC PostLeaderService
-#define TIMER9_RESP_FUNC TIMER_UNUSED
+#define TIMER9_RESP_FUNC PostLeaderService
 #define TIMER10_RESP_FUNC TIMER_UNUSED
 #define TIMER11_RESP_FUNC TIMER_UNUSED
 #define TIMER12_RESP_FUNC TIMER_UNUSED
@@ -278,5 +279,6 @@ typedef enum
 #define ARM_TIMER                6
 #define SUCK_TIMER               7
 #define FLYWHEEL_TIMER           8
+#define GAME_TIMER               9
 
 #endif /* ES_CONFIGURE_H */
