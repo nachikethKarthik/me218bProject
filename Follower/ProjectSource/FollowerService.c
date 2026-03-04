@@ -20,8 +20,10 @@
 
 #define Servo_MS      100
 
-#define SERVO_0_IDEL    15
-#define SERVO_0_RISE    105
+#define SERVO_0_IDEL    12
+#define SERVO_0_RISE    100
+#define SERVO_1_BLUE    125
+#define SERVO_1_GREEN   165
 #define SERVO_2_IDEL    180
 #define SERVO_2_MID     80
 #define SERVO_2_RISE    0
@@ -90,11 +92,11 @@ bool InitFollowerService(uint8_t Priority)
   
   // Servo Init
   Servo_Init();
-  Servo_SetAngle(1, 90);
-  Servo_SetAngle(0, 15);
+  Servo_SetAngle(1, 145);
+  Servo_SetAngle(0, SERVO_0_IDEL);
   Servo_SetAngle(2, 180);
-  Servo_SetAngle_Step(1, 90);
-  Servo_SetAngle_Step(0, 15);
+  Servo_SetAngle_Step(1, 145);
+  Servo_SetAngle_Step(0, SERVO_0_IDEL);
   Servo_SetAngle_Step(2, 180);
   Servo_SyncCurrentToOutput();
   
@@ -237,10 +239,10 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
                 //PrintTurn(turn);
             } 
             if (ThisEvent.EventParam == 'l'){
-                Servo_SetAngle_Step(0, 15);
+                Servo_SetAngle_Step(1, 125);
             }
             if (ThisEvent.EventParam == 'r'){
-                Servo_SetAngle_Step(0, 110);
+                Servo_SetAngle_Step(1, 165);
             }
             if (ThisEvent.EventParam == 'f'){
                 Flywheel_SetDuty(1);
@@ -287,12 +289,12 @@ ES_Event_t RunFollowerService(ES_Event_t ThisEvent)
         break;
         case ES_SERVO1_Idel:
         {
-            Servo_SetAngle(1, 0);
+            Servo_SetAngle(1, SERVO_1_BLUE);
         }
         break;
         case ES_SERVO1_Rise:
         {
-            Servo_SetAngle(1, 180);
+            Servo_SetAngle(1, SERVO_1_GREEN);
         }
         break;
         case ES_SERVO2_Idel:
@@ -375,11 +377,11 @@ void PrintTurn(float turn)
  * 0x0014 - return last front left reading
  * 0x0015 - Flywheel start
  * 0x0016 - Flywheel stop
- * 0x0021 - Servo_Arm(Servo 0) idel
+ * 0x0021 - Servo_Arm(Servo 0) idle
  * 0x0022 - Servo_Arm(Servo 0) rise
- * 0x0023 - Servo_Indicator (Servo 1) idel
+ * 0x0023 - Servo_Indicator (Servo 1) idle
  * 0x0024 - Servo_Indicator (Servo 1) rise
- * 0x0025 - Servo_Trapdoor(Servo 2) idel
+ * 0x0025 - Servo_Trapdoor(Servo 2) idle
  * 0x0026 - Servo_Trapdoor(Servo 2) rise
  * 0x0027 - Servo_Trapdoor(Servo 2) mid
  * 

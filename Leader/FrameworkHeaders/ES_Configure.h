@@ -251,8 +251,8 @@ typedef enum
 #define TIMER3_RESP_FUNC PostLeaderService
 #define TIMER4_RESP_FUNC PostLeaderService
 #define TIMER5_RESP_FUNC PostLeaderService
-#define TIMER6_RESP_FUNC TIMER_UNUSED
-#define TIMER7_RESP_FUNC TIMER_UNUSED
+#define TIMER6_RESP_FUNC PostLeaderService
+#define TIMER7_RESP_FUNC PostLeaderService
 #define TIMER8_RESP_FUNC TIMER_UNUSED
 #define TIMER9_RESP_FUNC TIMER_UNUSED
 #define TIMER10_RESP_FUNC TIMER_UNUSED
@@ -275,5 +275,7 @@ typedef enum
 #define FORWARD_TIMER            3
 #define IS_ONLINE_TIMER          4
 #define TRAPDOOR_TIMER           5
+#define ARM_TIMER                6
+#define SUCK_TIMER               7
 
 #endif /* ES_CONFIGURE_H */

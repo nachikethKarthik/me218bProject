@@ -40,7 +40,7 @@
 #define T3_PRESCALE_BITS    0b011        // 1:8 prescaler
 
 // Number of consistent period measurements required before posting event
-#define REQUIRED_CONSISTENT_PERIODS  3
+#define REQUIRED_CONSISTENT_PERIODS  20
 
 // Tolerance for period consistency check, once REQUIRED_CONSISTENT_PERIODS periods are measured, average is calculated and then 
 //we check if each period is within avg +- PERIOD_TOLERANCE_PERCENT*avg
