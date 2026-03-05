@@ -970,7 +970,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_ACTION_DONE:
             {
                 uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0028);
-                ES_Timer_InitTimer(FLYWHEEL_TIMER, 2000);
+                ES_Timer_InitTimer(FLYWHEEL_TIMER, 1500);
             }
             break;
         }
@@ -1196,7 +1196,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_ACTION_DONE:
             {
                 uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0028);
-                ES_Timer_InitTimer(FLYWHEEL_TIMER, 2000);
+                ES_Timer_InitTimer(FLYWHEEL_TIMER, 1500);
             }
             break;
         }
@@ -1445,7 +1445,11 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     MotorHAL_SetSpeedCmdRPM(0, ROTATE_L_R_RPM, 0);
                     MotorHAL_DriveEncoderCount(0, 255);
                     MotorHAL_DriveEncoderCount(1, 255);
-                    CurrentState = Seesaw3_State_8;
+                    
+                    
+                    // Change here. will go to seesaw4
+                    //CurrentState = Seesaw3_State_8;
+                    CurrentState = Seesaw4_State_3;
                 }
             break;
         }
@@ -1644,6 +1648,22 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
     {
         switch (ThisEvent.EventType)
         {
+            
+            case ES_ACTION_DONE:
+            {
+                MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                
+                //Rise the arm and stop the flywheel
+                uint16_t A = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
+                uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0027);
+                uint16_t C = (uint16_t)SPI1Leader_RequestResponse16(0x0016);
+                
+                ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
+            }
+            break;
+            
+            
             case ES_TIMEOUT:
             {
                 if (ThisEvent.EventParam == LINEFOLLOWING_TIMER){
@@ -1672,8 +1692,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
             {
-                MotorHAL_SetSpeedCmdRPM(1, 30, 1);
-                MotorHAL_SetSpeedCmdRPM(0, 30, 0);
+                MotorHAL_SetSpeedCmdRPM(1, 30, 0);
+                MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                 MotorHAL_DriveEncoderCount(0, 245); //255 before
                 MotorHAL_DriveEncoderCount(1, 245);
                 CurrentState = Seesaw4_State_5;
@@ -1710,8 +1730,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                         MotorHAL_DriveEncoderCount(0, 110);
                         MotorHAL_DriveEncoderCount(1, 110);
                     }else if(R == 1){
-                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 1);
-                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 1);
+//                        MotorHAL_SetSpeedCmdRPM(1, base_speed, 1);
+//                        MotorHAL_SetSpeedCmdRPM(0, base_speed, 1);
                         ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
                     }else{
                         MotorHAL_SetSpeedCmdRPM(1, base_speed + R - 100UL, 1);
@@ -1731,8 +1751,13 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
                 {
-                    uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
-                    ES_Timer_InitTimer(TRAPDOOR_TIMER, 5000);
+                    uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0021);
+                    CurrentState = Seesaw5_State_1;
+                    MotorHAL_SetSpeedCmdRPM(1, 30, 1);
+                    MotorHAL_SetSpeedCmdRPM(0, 30, 1);
+                    MotorHAL_DriveEncoderCount(0, 20); //255 before
+                    MotorHAL_DriveEncoderCount(1, 20);
+                    //ES_Timer_InitTimer(TRAPDOOR_TIMER, 5000);
                 }
                 break;
             case ES_TIMEOUT:
@@ -1759,6 +1784,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
             case ES_ACTION_DONE:
                 {
                     CurrentState = Seesaw5_State_2;
+                    uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
                     MotorHAL_SetSpeedCmdRPM(1, 30, 1);
                     MotorHAL_SetSpeedCmdRPM(0, 30, 1);
                     MotorHAL_DriveEncoderCount(0, 145); //255 before
@@ -1776,7 +1802,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
         {
             case ES_ACTION_DONE:
                 {
-                    uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0026);
+                    uint16_t B = (uint16_t)SPI1Leader_RequestResponse16(0x0021);
                 }
                 break;
        
