@@ -1105,8 +1105,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     // After rotate, drive forward to the second seesaw
                     MotorHAL_SetSpeedCmdRPM(0, 40, 1);
                     MotorHAL_SetSpeedCmdRPM(1, 40, 1);
-                    MotorHAL_DriveEncoderCount(0, 300);
-                    MotorHAL_DriveEncoderCount(1, 300);
+                    MotorHAL_DriveEncoderCount(0, 320);
+                    MotorHAL_DriveEncoderCount(1, 320);
                     CurrentState = Seesaw2_State_3;
                 }
                 break;
@@ -1131,8 +1131,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                     uint16_t E = (uint16_t)SPI1Leader_RequestResponse16(0x0025);
                     MotorHAL_SetSpeedCmdRPM(0, 20, 0);
                     MotorHAL_SetSpeedCmdRPM(1, 20, 0);
-                    MotorHAL_DriveEncoderCount(0, 300);
-                    MotorHAL_DriveEncoderCount(1, 300);
+                    MotorHAL_DriveEncoderCount(0, 320);
+                    MotorHAL_DriveEncoderCount(1, 320);
                     
                     CurrentState = Seesaw2_State_4;
                 }
