@@ -16,9 +16,9 @@
 
 #define LineFollowing_MS     50
 
-#define ROTATE_L_R_RPM  90  // //used to be 30
+#define ROTATE_L_R_RPM  60  // //used to be 30
 
-#define BASE_SPEED_TO_DISPENSER  80  // used to be 30
+#define BASE_SPEED_TO_DISPENSER  60  // used to be 30
 #define BASE_SPEED_TO_BUCKET1    30   // 
 
 /*---------------------------- Module Functions ---------------------------*/
@@ -541,6 +541,7 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 //MotorHAL_DriveEncoderCount(0, 400);
                 //MotorHAL_DriveEncoderCount(1, 400);
                 CurrentState = LineFollowingState_3;
+                uint16_t R = (uint16_t)SPI1Leader_RequestResponse16(0x0022);
                 //ES_Timer_InitTimer(FORWARD_TIMER, 2000);
                 ES_Timer_InitTimer(LINEFOLLOWING_TIMER, LineFollowing_MS);
             }
@@ -1292,8 +1293,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 // Rotate 90 degrees
                 MotorHAL_SetSpeedCmdRPM(1, 30, 1);
                 MotorHAL_SetSpeedCmdRPM(0, 30, 0);
-                MotorHAL_DriveEncoderCount(0, 245); //255 before
-                MotorHAL_DriveEncoderCount(1, 245);
+                MotorHAL_DriveEncoderCount(0, 250); //255 before
+                MotorHAL_DriveEncoderCount(1, 250);
                 CurrentState = Seesaw3_State_3;
             }
             break;
@@ -1589,8 +1590,8 @@ ES_Event_t RunLeaderService(ES_Event_t ThisEvent)
                 // Rotate 90 degrees
                 MotorHAL_SetSpeedCmdRPM(1, 30, 1);
                 MotorHAL_SetSpeedCmdRPM(0, 30, 0);
-                MotorHAL_DriveEncoderCount(0, 245); //255 before
-                MotorHAL_DriveEncoderCount(1, 245);
+                MotorHAL_DriveEncoderCount(0, 250); //255 before
+                MotorHAL_DriveEncoderCount(1, 250);
                 CurrentState = Seesaw4_State_2;
             }
             break;
